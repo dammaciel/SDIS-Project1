@@ -1,14 +1,23 @@
 package Service;
 
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.UnknownHostException;
+
+import Handler.CommandHandler;
+import Handler.PackageHandler;
+import Protocol.BackupProtocol;
 
 //Represents a Server Peer
 public class Peer {
 	private int id;
-	private FileSystem fs;
+	private ServerSocket serverSocket;
 	
 	// The UDP multicast Sockets that are run on each peer
 	private MulticastSocket MC;
@@ -53,6 +62,11 @@ public class Peer {
         }
         
         Peer p = new Peer(peerId, MC_port, MDB_port, MDR_port, MC_address, MDB_address, MDR_address);
+        
+        CommandHandler.getInstance(p);
+        p.joinMulticastGroups();
+
+        p.startHandlers();
     }
     
 	public Peer(int _id, int mcPort, int mdbPort,int mdrPort, InetAddress mcAddress, InetAddress mdbAddress, InetAddress mdrAddress){
@@ -63,52 +77,6 @@ public class Peer {
 	    this.MC_address = mcAddress;
 	    this.MDB_address = mdbAddress;
 	    this.MDR_address = mdrAddress;
-
-		fs= new FileSystem(id);
-	}
-
-	
-	/*
-	 * Gets
-	 */
-	public int getId() {
-		return id;
-	}
-
-	public MulticastSocket getMC() {
-		return MC;
-	}
-
-	public MulticastSocket getMDB() {
-		return MDB;
-	}
-
-	public MulticastSocket getMDR() {
-		return MDR;
-	}
-
-	public int getMC_port() {
-		return MC_port;
-	}
-
-	public int getMDB_port() {
-		return MDB_port;
-	}
-
-	public int getMDR_port() {
-		return MDR_port;
-	}
-
-	public InetAddress getMC_address() {
-		return MC_address;
-	}
-
-	public InetAddress getMDB_address() {
-		return MDB_address;
-	}
-
-	public InetAddress getMDR_address() {
-		return MDR_address;
 	}
 	
 	/*
@@ -117,11 +85,10 @@ public class Peer {
 	private void joinMulticastGroups() {
         try {
             MC = new MulticastSocket(MC_port);
-            MDB = new MulticastSocket(MDB_port);
-            MDR = new MulticastSocket(MDR_port);
-
             MC.setTimeToLive(1);
+            MDB = new MulticastSocket(MDB_port);
             MDB.setTimeToLive(1);
+            MDR = new MulticastSocket(MDR_port);
             MDR.setTimeToLive(1);
 
             MC.joinGroup(MC_address);
@@ -134,6 +101,81 @@ public class Peer {
 
         System.out.println("Succesfully joined groups");
     }
+	
+	public void startHandlers(){
+        CommandHandler handler = CommandHandler.getInstance(this);
+        handler.start();
+
+        PackageHandler mc_handler = new PackageHandler(MC, MC_address, MC_port, "MC");
+        mc_handler.start();
+
+        PackageHandler mdb_handler = new PackageHandler(MDB, MDB_address, MDB_port, "MDB");
+        mdb_handler.start();
+
+        PackageHandler mdr_handler = new PackageHandler(MDR, MDR_address, MDR_port, "MDR");
+        mdr_handler.start();
+    }
+	
+	void run(){
+		boolean done = false;
+		while(!done){
+			Socket socket =null;
+			try {
+                socket = serverSocket.accept();
+            } catch (Exception e) { 
+            	e.printStackTrace(); 
+            	}
+			try{
+			BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			String request = br.readLine();
+			String[] tokens = request.split(" ");
+			switch(tokens[0]){
+				case "BACKUP":
+					int replicationDeg = Integer.parseInt(tokens[2]);
+                    try {
+                        File file = new File(tokens[1]);
+                        backup(file, replicationDeg);
+                    } catch (Exception e) { e.printStackTrace(); }
+					break;
+				case "RESTORE":
+					break;
+				case "DELETE":
+					break;
+				case "RECLAIM":
+					break;
+				case "CLEAR":
+					break;
+				default:
+					break;
+			}
+			}catch(IOException e){
+				
+			}
+		}
+		try { 
+			serverSocket.close(); 
+			} catch (IOException e) { 
+				e.printStackTrace(); 
+			}
+        System.exit(0);
+	}
+	
+	private void backup (File f, int replD){
+		new Thread(new BackupProtocol(this, f, replD)).start();
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public int getMDB_port() {
+		return MDB_port;
+	}
+
+	public InetAddress getMDB_address() {
+		return MDB_address;
+	}
+	
 	
 }
 
