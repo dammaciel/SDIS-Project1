@@ -1,181 +1,92 @@
 package Service;
 
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.InetAddress;
-import java.net.MulticastSocket;
-import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 
 import Handler.CommandHandler;
-import Handler.PackageHandler;
 import Protocol.BackupProtocol;
+import Handler.BackupHandler;
 
-//Represents a Server Peer
-public class Peer {
+public class Peer implements PeerInterface{
 	private int id;
-	private ServerSocket serverSocket;
+	private Channel MC;
+	private Channel MDB;
+	private Channel MDR;
 	
-	// The UDP multicast Sockets that are run on each peer
-	private MulticastSocket MC;
-	private MulticastSocket MDB;
-	private MulticastSocket MDR;
-	
-	// The multicast port of the corresponding socket
-    private int MC_port;
-    private int MDB_port;
-    private int MDR_port;
-
-    // The multicast address of the corresponding socket
-    private InetAddress MC_address;
-    private InetAddress MDB_address;
-    private InetAddress MDR_address;
-	
-	
-    public static void main(String[] args) {
-    	
-    	if(args.length != 7){
-            System.err.println("Usage: <serverID> <mcIP> <mcPort> <mdbIP> <mdbPort> <mdrIP> <mdrPort>");
-            System.exit(-1);
-        }
-    	
-    	int peerId = Integer.parseInt(args[0]);
-        String mcIP = args[1];
-        String mdbIP = args[3];
-        String mdrIP = args[5];
-        int MC_port = Integer.parseInt(args[2]);
-        int MDB_port = Integer.parseInt(args[4]);
-        int MDR_port = Integer.parseInt(args[6]);
-        InetAddress MC_address = null;
-        InetAddress MDB_address = null;
-        InetAddress MDR_address = null;
-        try {
-            MC_address = InetAddress.getByName(mcIP);
-            MDB_address = InetAddress.getByName(mdbIP);
-            MDR_address = InetAddress.getByName(mdrIP);
-        } catch (UnknownHostException e) {
-            System.err.println(e.getMessage());
-            System.exit(-1);
-        }
-        
-        Peer p = new Peer(peerId, MC_port, MDB_port, MDR_port, MC_address, MDB_address, MDR_address);
-        
-        CommandHandler.getInstance(p);
-        p.joinMulticastGroups();
-
-        p.startHandlers();
-    }
-    
-	public Peer(int _id, int mcPort, int mdbPort,int mdrPort, InetAddress mcAddress, InetAddress mdbAddress, InetAddress mdrAddress){
-		this.id = _id;
-	    this.MC_port = mcPort;
-	    this.MDB_port = mdbPort;
-	    this.MDR_port = mdrPort;
-	    this.MC_address = mcAddress;
-	    this.MDB_address = mdbAddress;
-	    this.MDR_address = mdrAddress;
-	}
-	
-	/*
-	 * Open sockets and join multicast groups
-	 */
-	private void joinMulticastGroups() {
-        try {
-            MC = new MulticastSocket(MC_port);
-            MC.setTimeToLive(1);
-            MDB = new MulticastSocket(MDB_port);
-            MDB.setTimeToLive(1);
-            MDR = new MulticastSocket(MDR_port);
-            MDR.setTimeToLive(1);
-
-            MC.joinGroup(MC_address);
-            MDB.joinGroup(MDB_address);
-            MDR.joinGroup(MDR_address);
-        } catch (IOException e) {
-            System.err.println("Cannot join to all multicast channels");
-            System.exit(-1);
-        }
-
-        System.out.println("Succesfully joined groups");
+	public static void main(String[] args) throws Exception{
+		 if (args.length != 7) {
+			System.out.println("Usage:");
+	        System.out.println("\tjava Service.Peer <server_id> <mc_addr> <mc_port> <mdb_addr> <mdb_port> <mdr_addr> <mdr_port>");
+			return; 
+		 }
+		 
+            Peer peer = new Peer(args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
+            try {
+                PeerInterface stub = (PeerInterface) UnicastRemoteObject.exportObject(peer, Integer.parseInt(args[0]));
+                Registry registry = LocateRegistry.createRegistry(Integer.parseInt(args[0]));
+                registry.rebind("Peer",stub);
+            } catch (RemoteException e) {
+                System.err.println("Cannot export RMI Object");
+                System.exit(-1);
+            }
+            
+            peer.run();
+            
     }
 	
-	public void startHandlers(){
-        CommandHandler handler = CommandHandler.getInstance(this);
-        handler.start();
+	/**
+     * Open sockets and have them join their multicast groups
+     */
+	public Peer(String id, String mc_address,String mc_port,String mdb_address, String mdb_port,String mdr_address,String mdr_port) throws Exception {
+		this.id = Integer.parseInt(id);		
+		
+        this.MC = new Channel(InetAddress.getByName(mc_address), Integer.parseInt(mc_port),"MC");
+        this.MDB = new Channel(InetAddress.getByName(mdb_address), Integer.parseInt(mdb_port),"MDB");
+        this.MDR = new Channel(InetAddress.getByName(mdr_address), Integer.parseInt(mdr_port),"MDR");
 
-        PackageHandler mc_handler = new PackageHandler(MC, MC_address, MC_port, "MC");
-        mc_handler.start();
-
-        PackageHandler mdb_handler = new PackageHandler(MDB, MDB_address, MDB_port, "MDB");
-        mdb_handler.start();
-
-        PackageHandler mdr_handler = new PackageHandler(MDR, MDR_address, MDR_port, "MDR");
-        mdr_handler.start();
     }
 	
-	void run(){
-		boolean done = false;
-		while(!done){
-			Socket socket =null;
-			try {
-                socket = serverSocket.accept();
-            } catch (Exception e) { 
-            	e.printStackTrace(); 
-            	}
-			try{
-			BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			String request = br.readLine();
-			String[] tokens = request.split(" ");
-			switch(tokens[0]){
-				case "BACKUP":
-					int replicationDeg = Integer.parseInt(tokens[2]);
-                    try {
-                        File file = new File(tokens[1]);
-                        backup(file, replicationDeg);
-                    } catch (Exception e) { e.printStackTrace(); }
-					break;
-				case "RESTORE":
-					break;
-				case "DELETE":
-					break;
-				case "RECLAIM":
-					break;
-				case "CLEAR":
-					break;
-				default:
-					break;
-			}
-			}catch(IOException e){
-				
-			}
-		}
-		try { 
-			serverSocket.close(); 
-			} catch (IOException e) { 
-				e.printStackTrace(); 
-			}
-        System.exit(0);
-	}
-	
-	private void backup (File f, int replD){
-		new Thread(new BackupProtocol(this, f, replD)).start();
+	public void run(){
+		Thread mc_thread = new Thread(MC);
+		mc_thread.start();
+		
+		System.out.println("Inicializar Handler");
+		BackupHandler backupHandler = new BackupHandler(id, MC);
+        MDB.addHandler(backupHandler);
+
+		//CommandHandler handler = CommandHandler.getInstance(this);
+        //handler.start();
 	}
 
 	public int getId() {
 		return id;
 	}
 
-	public int getMDB_port() {
-		return MDB_port;
+	public Channel getMC() {
+		return MC;
 	}
 
-	public InetAddress getMDB_address() {
-		return MDB_address;
+	public Channel getMDB() {
+		return MDB;
 	}
+
+	public Channel getMDR() {
+		return MDR;
+	}
+	
+    public void putFile(String fileName, int replication) {
+    	try{
+    		BackupProtocol.run(MDB, "example.txt","1.0",id,replication);  //enquando o handler n funciona
+            }catch(IOException e){
+            	e.printStackTrace();
+            }
+    }
 	
 	
 }
-

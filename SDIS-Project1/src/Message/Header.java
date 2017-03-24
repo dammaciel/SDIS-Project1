@@ -1,4 +1,4 @@
-package Protocol;
+package Message;
 
 import java.util.Arrays;
 import java.util.regex.Pattern;
@@ -32,10 +32,6 @@ public class Header {
 
     }
     
-    public byte[] getBytes(){
-        return toString().getBytes();
-    }
-    
     public Header(String message) throws  IllegalArgumentException{
         String[] fields = message.split("\\s+");
 
@@ -66,5 +62,33 @@ public class Header {
         if(!r.matcher(version).matches())
             throw new IllegalArgumentException("Invalid <Version>");
 
+    }
+
+	public String getMessageType() {
+		return messageType;
+	}
+
+	public String getVersion() {
+		return version;
+	}
+
+	public int getSenderId() {
+		return senderId;
+	}
+
+	public String getFileId() {
+		return fileId;
+	}
+
+	public int getChunkNo() {
+		return chunkNo;
+	}
+
+	public int getReplicationDeg() {
+		return replicationDeg;
+	}
+    
+    public byte[] getBytes(){
+        return toString().getBytes();
     }
 }

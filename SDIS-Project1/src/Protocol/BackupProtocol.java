@@ -1,42 +1,53 @@
 package Protocol;
 
+import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.DatagramPacket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Arrays;
 
-import Service.Peer;
+import Message.Header;
+import Message.Message;
+import Service.Channel;
 
-import Utils.Utils;
-
-public class BackupProtocol implements Runnable {
-	private Peer peer;
-	File file;
-    int replD;
-
-    
-    public BackupProtocol(Peer peer, File file, int replD) {
-    	this.peer= peer;
-        this.file = file;
-        this.replD = replD;
-    }
-    
-	@Override
-	public void run() {
-		try{
-		FileSpliter spliter = new FileSpliter (file, replD);
-		Chunk[] chunks = spliter.getChunks();
+public class BackupProtocol {
+	public static boolean run(Channel MDB, String path, String version, int senderId, int replicationDeg) throws IOException {
+		File file = new File(path);
+		FileInputStream is = new FileInputStream(file);
 		
-		for (Chunk c : chunks) {
-			Header messageHeader = new Header("PUTCHUNK", "1.0", peer.getId(), c.fileID, c.chunkNo, c.replDeg);
-	        Message msg = new Message(messageHeader, c.data);
-	        DatagramPacket requestPacket = new DatagramPacket(msg.getBytes(), msg.getBytes().length, peer.getMDB_address(), peer.getMDB_port());
+		String filename = file.getName();
 
+		Path filePath = Paths.get(path);
+        BasicFileAttributes attr = Files.readAttributes(filePath, BasicFileAttributes.class);
+        String lastModified = String.valueOf(attr.lastModifiedTime());
+        String owner = String.valueOf(Files.getOwner(filePath));
+        String fileId=filename+owner+lastModified;
+        System.out.println(fileId);
+        String hashFileId=Message.buildHash(fileId);  //tentar mudar
+        
+        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
+        
+        int i=0;
+        while (true) {
+            byte[] chunk = new byte[Message.CHUNK_SIZE];
+            int bytesRead = bis.read(chunk);
+            if (bytesRead == -1) {
+                break;
+            }
+            Header header = new Header("PUTCHUNK", "1.0", 1, hashFileId, i, replicationDeg);
+
+            byte[] body = Arrays.copyOf(chunk, bytesRead);
+            Message msg = new Message(header, body);
+            MDB.send(msg);
+            
+            i++;
         }
-		
-		}catch(Exception e){
-			
-		}
-	}
+        bis.close();
 
+        return true;
+	}
 }
