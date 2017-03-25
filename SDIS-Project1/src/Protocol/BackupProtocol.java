@@ -26,7 +26,6 @@ public class BackupProtocol {
         String lastModified = String.valueOf(attr.lastModifiedTime());
         String owner = String.valueOf(Files.getOwner(filePath));
         String fileId=filename+owner+lastModified;
-        System.out.println(fileId);
         String hashFileId=Message.buildHash(fileId);  //tentar mudar
         
         BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));

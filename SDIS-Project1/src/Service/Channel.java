@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import Message.Header;
@@ -16,6 +17,8 @@ public class Channel implements Runnable {
     private InetAddress address;
     private int port;
     private String name;
+    
+    protected volatile boolean shutdown;
     
     public ArrayList<Handler> handlers = new ArrayList<>();
     
@@ -51,8 +54,9 @@ public class Channel implements Runnable {
             try {
             	System.out.println(this.name + " Estou pronto a receber");
                 socket.receive(packet);
-                System.out.print("Vamos para o handle?");
                 handle(packet);
+                System.out.print("Vamos para o handle?");
+                
             } catch (IOException e) {
             	System.out.println(e);
                 e.printStackTrace();
@@ -83,7 +87,7 @@ public class Channel implements Runnable {
         DatagramPacket p = new DatagramPacket(packet, packet.length, address, port);
         try {
             socket.send(p);
-            System.out.print(this.name + " está a enviar");
+            System.out.println(this.name + " está a enviar");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -92,7 +96,6 @@ public class Channel implements Runnable {
 	public void addHandler(Handler h) {
         h.channel_type = name;
         handlers.add(h);
-        System.out.println(handlers);
     }
 	
 	private void handle(DatagramPacket packet) {
@@ -107,6 +110,10 @@ public class Channel implements Runnable {
         catch (IllegalArgumentException e) {
         	e.printStackTrace();
         }
+    }
+	
+	public void shutdown() {
+        shutdown = true;
     }
 	
 

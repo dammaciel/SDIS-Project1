@@ -10,6 +10,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
 import Handler.CommandHandler;
+import Handler.PackageHandler;
 import Protocol.BackupProtocol;
 import Handler.BackupHandler;
 
@@ -50,18 +51,34 @@ public class Peer implements PeerInterface{
         this.MDB = new Channel(InetAddress.getByName(mdb_address), Integer.parseInt(mdb_port),"MDB");
         this.MDR = new Channel(InetAddress.getByName(mdr_address), Integer.parseInt(mdr_port),"MDR");
 
+        Runtime.getRuntime().addShutdownHook(new Thread()
+        {
+            @Override
+            public void run()
+            {
+                MC.getSocket().close();
+                MC.shutdown();
+                MDB.getSocket().close();
+                MDB.shutdown();
+            }
+        });
     }
 	
 	public void run(){
 		Thread mc_thread = new Thread(MC);
 		mc_thread.start();
-		
-		System.out.println("Inicializar Handler");
-		BackupHandler backupHandler = new BackupHandler(id, MC);
-        MDB.addHandler(backupHandler);
 
-		//CommandHandler handler = CommandHandler.getInstance(this);
-        //handler.start();
+		CommandHandler handler = CommandHandler.getInstance(this);
+        handler.start();
+        
+        PackageHandler mcChannelHandler = new PackageHandler(MC);
+        mcChannelHandler.start();
+
+        PackageHandler mdbChannelHandler = new PackageHandler(MDB);
+        mdbChannelHandler.start();
+
+        PackageHandler mdrChannelHandler = new PackageHandler(MDR);
+        mdrChannelHandler.start();
 	}
 
 	public int getId() {
@@ -80,9 +97,9 @@ public class Peer implements PeerInterface{
 		return MDR;
 	}
 	
-    public void putFile(String fileName, int replication) {
+    public void putFile(String filePath, int replication) {
     	try{
-    		BackupProtocol.run(MDB, "example.txt","1.0",id,replication);  //enquando o handler n funciona
+    		BackupProtocol.run(MDB, filePath,"1.0",id,replication);  //enquando o handler n funciona
             }catch(IOException e){
             	e.printStackTrace();
             }
