@@ -54,9 +54,7 @@ public class Channel implements Runnable {
             try {
             	System.out.println(this.name + " Estou pronto a receber");
                 socket.receive(packet);
-                handle(packet);
-                System.out.print("Vamos para o handle?");
-                
+                handle(packet);                
             } catch (IOException e) {
             	System.out.println(e);
                 e.printStackTrace();
@@ -99,7 +97,6 @@ public class Channel implements Runnable {
     }
 	
 	private void handle(DatagramPacket packet) {
-		System.out.println("estou no handle");
         try {
             Message m = new Message(packet);
             for (int i = 0; i < handlers.size(); ++i) {

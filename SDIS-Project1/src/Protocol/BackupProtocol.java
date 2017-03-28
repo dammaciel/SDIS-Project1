@@ -41,6 +41,13 @@ public class BackupProtocol {
 
             byte[] body = Arrays.copyOf(chunk, bytesRead);
             Message msg = new Message(header, body);
+            
+            try {
+                Thread.sleep(400);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            
             MDB.send(msg);
             
             i++;

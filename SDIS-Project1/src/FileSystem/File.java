@@ -5,10 +5,13 @@ import java.util.HashMap;
 public class File {
 	private String id;
     private HashMap<Integer, Chunk> chunks;
+    private String path;
     
-    public File(String id) {
+    public File(String id, String path) {
         this.id = id;
+        this.path = path;
         this.chunks = new HashMap<>();
+        FileSystem.instance().addFile(id, this);   
     }
 
     public void addChunk(Chunk chunk) {
