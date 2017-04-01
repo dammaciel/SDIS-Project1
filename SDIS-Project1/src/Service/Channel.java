@@ -85,7 +85,7 @@ public class Channel implements Runnable {
         DatagramPacket p = new DatagramPacket(packet, packet.length, address, port);
         try {
             socket.send(p);
-            System.out.println(this.name + " está a enviar");
+            System.out.println(this.name + " esta a enviar");
         } catch (IOException e) {
             e.printStackTrace();
         }
