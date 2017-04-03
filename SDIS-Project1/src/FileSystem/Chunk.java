@@ -5,39 +5,51 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 
 import Message.Message;
 
 public class Chunk implements Serializable{
-	private int chunk_nr;
-    private int replicationD;
+	private ArrayList<Integer> replication;
+    private int desired;
     private byte[] data;
-    private String path;
+    private int size;
     
-    public Chunk(int chunk_nr, int replicationD, byte[] _data, String path) {
-        this.chunk_nr = chunk_nr;
-        this.replicationD = replicationD;
-        this.data = _data;
-        this.path= path;
+    public Chunk(int desired) {
+        this.replication = new ArrayList<>();
+        this.desired = desired;
+        data = null;
+        size = 0;
     }
 
-	public int getChunk_nr() {
-		return chunk_nr;
-	}
-
-	public int getReplicationD() {
-		return replicationD;
-	}
-
+    public Chunk(int peerId, int desired) {
+        replication = new ArrayList<>();
+        this.replication.add(peerId);
+        this.desired = desired;
+        data = null;
+        size = 0;
+    }
+    
 	public byte[] getData() {
 		return data;
 	}
-    
-	public void saveData() throws IOException {
-        Path pathToFile = Paths.get(this.path);
-        Files.createDirectories(pathToFile.getParent());
-        Files.write(pathToFile, this.data);
-        this.data = null;
-    };
 
+	public int getReplication() {
+		return replication.size();
+	}
+
+	public int getDesired() {
+		return desired;
+	}
+
+	public int getSize() {
+		return size;
+	}
+	
+	public void incrementReplication(int peerId) {
+        if (!replication.contains(peerId)) {
+            replication.add(peerId);
+        }
+    }
+	
 }

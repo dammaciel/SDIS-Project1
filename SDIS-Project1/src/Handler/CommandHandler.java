@@ -9,7 +9,6 @@ import java.util.Random;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import FileSystem.Chunk;
-import FileSystem.File;
 import FileSystem.FileSystem;
 import Handler.CommandHandler;
 import Message.Header;
@@ -72,7 +71,7 @@ public class CommandHandler extends Thread {
 				handlePutChunk(msg);
 				break;
 			case "STORED":
-
+				handleStored(msg);
 				break;
 			case "GETCHUNK":
 
@@ -100,38 +99,59 @@ public class CommandHandler extends Thread {
 		return "ERROR";
 	}
 
-	private void handlePutChunk(Message m) {
-		File file_chunk;
-		String fileId = m.getHeader().getFileId();
-		if (FileSystem.instance().hasFile(fileId)) {
-			file_chunk = FileSystem.instance().getFile(fileId);
-		} else {
-			String dir_path = peer.getId() + "/" + fileId + "/";
-			file_chunk = new File(fileId, dir_path);
-		}
-		Random rand = new Random();
-		try {
-            Thread.sleep(rand.nextInt(401));
-        } catch (InterruptedException e) { e.printStackTrace(); }
-
-		int chunk_nr = m.getHeader().getChunkNo();
-		int replD = m.getHeader().getReplicationDeg();
-		try {
-			if (!file_chunk.hasChunk(chunk_nr)) {
-				String chunk_path = peer.getId() + "/" + fileId + "/" + chunk_nr + ".txt";
-				Chunk chunk = new Chunk(chunk_nr, replD, m.getBody(), chunk_path);
-				chunk.saveData();
-			}
-			Header response_header = new Header("STORED", "1.0", peer.getId(), fileId, chunk_nr, replD);
+	private void handlePutChunk(Message m) throws IOException {
+		if (m.getHeader().getSenderId() != peer.getId()) {
+			System.out.println("Received PUTCHUNK :" + m.getHeader().getFileId() + " - " + m.getHeader().getChunkNo());
+			try {
+                peer.getFileSystem().saveChunk(peer.getId(), m.getHeader().getFileId(), m.getHeader().getChunkNo(), m.getHeader().getReplicationDeg(), m.getBody());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+			
+			
+			Header response_header = new Header("STORED", "1.0", peer.getId(), m.getHeader().getFileId(), m.getHeader().getChunkNo(), m.getHeader().getReplicationDeg());
 			Message response = new Message(response_header, null);
+			
+			Random rand = new Random();
+			try {
+	            Thread.sleep(rand.nextInt(401));
+	        } catch (InterruptedException e) { e.printStackTrace(); }
+			
 			MulticastSocket socket = peer.getMC().getSocket();
 			DatagramPacket packet = new DatagramPacket(response.getBytes(), response.getBytes().length,
 					peer.getMC().getAddress(), peer.getMC().getPort());
-
 			socket.send(packet);
 
-		} catch (IOException e) {
-			System.err.println("Error: Couldn't create chunk file");
+		}else{
+			System.out.println("Received mine PUTCHUNK");
 		}
+		
+		try {
+            peer.getFileSystem().saveFileSystem(peer.getId());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 	}
+	
+	public void handleStored(Message msg){
+
+        String fileId = msg.getHeader().getFileId();
+        int senderId = msg.getHeader().getSenderId();
+        int chunkNo = msg.getHeader().getChunkNo();
+
+        System.out.println("Received STORED :" + fileId + " - " + chunkNo);
+
+        peer.getFileSystem().incrementReplication(senderId, fileId, chunkNo);
+        try {
+            peer.getFileSystem().saveFileSystem(peer.getId());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+	}
+
+	public static Peer getPeer() {
+		return peer;
+	}
+	
+	
 }
