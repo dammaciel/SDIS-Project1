@@ -85,7 +85,7 @@ public class BackupProtocol {
         thread.start();
         
         while(attempt < 5 && !done){
-        	 Header header = new Header("PUTCHUNK", "1.0", 1, fileId, chunkNo, replication);
+        	 Header header = new Header("PUTCHUNK", "1.0", peer.getId(), fileId, chunkNo, replication);
         	 byte[] body = chunkData;
              Message msg = new Message(header, body);
              peer.getMDB().send(msg);

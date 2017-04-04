@@ -39,7 +39,7 @@ public class TestApp {
 				System.out.println("Bem vindo ao Restore");
 				break;
 			case "DELETE":
-				// peer.deleteFile(fileName);
+				peer.deleteFile(fileName);
 				System.out.println("Bem vindo ao Delete");
 				break;
 			case "RECLAIM":

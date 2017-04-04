@@ -80,7 +80,7 @@ public class CommandHandler extends Thread {
 
 				break;
 			case "DELETE":
-
+				handleDelete(msg);
 				break;
 			case "REMOVED":
 
@@ -139,13 +139,25 @@ public class CommandHandler extends Thread {
         int senderId = msg.getHeader().getSenderId();
         int chunkNo = msg.getHeader().getChunkNo();
 
-        System.out.println("Received STORED :" + fileId + " - " + chunkNo);
+        System.out.println("Received STORED:" + fileId + " - " + chunkNo);
 
         peer.getFileSystem().incrementReplication(senderId, fileId, chunkNo);
         try {
             peer.getFileSystem().saveFileSystem(peer.getId());
         } catch (IOException e) {
             e.printStackTrace();
+        }
+	}
+	
+	public void handleDelete(Message msg){
+		System.out.println("Receveid DELETE: " + msg.getHeader().getFileId());
+		String fileId=msg.getHeader().getFileId();
+		if (peer.getFileSystem().getFile(fileId) != null) {
+            for (int chunkNo : peer.getFileSystem().getChunks(fileId).keySet()) {
+                peer.getFileSystem().deleteChunk(fileId, chunkNo);
+                peer.getFileSystem().removeSpaceUsed(peer.getFileSystem().getChunk(fileId, chunkNo).getSize());
+            }
+            peer.getFileSystem().deleteFile(fileId);
         }
 	}
 

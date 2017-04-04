@@ -32,6 +32,21 @@ public class Header {
 
     }
     
+    public Header(String messageType, String version, int senderId, String fileId){
+    	if(!Arrays.asList(types).contains(messageType)){
+            throw new IllegalArgumentException("Invalid <MessageType>");
+        }
+        Pattern r = Pattern.compile("[0-9]*.[0-9]");
+        if(!r.matcher(version).matches()){
+            throw new IllegalArgumentException("Invalid <Version>");
+        }
+        
+    	this.messageType = messageType;
+        this.version = version;
+        this.senderId = senderId;
+        this.fileId = fileId;
+    }
+    
     public Header(String message) throws  IllegalArgumentException{
         String[] fields = message.split("\\s+");
 
