@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.HashMap;
 
@@ -146,11 +147,14 @@ public class FileSystem implements Serializable {
 
 	public void deleteChunk(String fileId, int chunkNo) {
 		String path = "./storage/" + getChunkName(fileId, chunkNo);
-		try {
-			Files.delete(Paths.get(path));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+			try {
+				Files.delete(Paths.get(path));
+			} catch (NoSuchFileException e) {
+				
+			} catch(IOException e2){
+				e2.printStackTrace();
+			}
+
 	}
 	
 	public void deleteFile(String fileId) {
