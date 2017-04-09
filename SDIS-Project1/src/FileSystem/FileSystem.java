@@ -290,5 +290,29 @@ public class FileSystem implements Serializable {
         }
         return data;
     }
+	
+	public FileAttributes getFileAttributes(String path) {
+		System.out.println(files.size());
+        for (FileChunk data : files.values()) {
+        	System.out.println(data.getAttributes().getPath());
+        	System.out.println("vs "+path);
+            if (data.getAttributes().getPath().equals(path)) {
+                return data.getAttributes();
+            }
+        }
+        return null;
+    }
+	
+	public void restoreChunk(String fileId, int chunkNo, byte[] data) {
+        FileChunk file = getFile(fileId);
+        if (file != null) {
+            Chunk chunk = file.getChunk(chunkNo);
+            if (chunk == null) {
+                chunk = new Chunk();
+                file.getChunks().put(chunkNo, chunk);
+            }
+            chunk.setData(data);
+        }
+    }
 
 }

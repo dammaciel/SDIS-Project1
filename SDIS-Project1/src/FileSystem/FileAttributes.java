@@ -26,4 +26,30 @@ public class FileAttributes implements Serializable {
         lastAccess = attr.lastAccessTime().toMillis();
         creation = attr.creationTime().toMillis();
     }
+
+	public String getPath() {
+		return path;
+	}
+
+	public String getFileId() {
+		return fileId;
+	}
+
+	public long getSize() {
+		return size;
+	}
+
+	public long getLastModified() {
+		return lastModified;
+	}
+
+	public long getLastAccess() {
+		return lastAccess;
+	}
+
+	public long getCreation() {
+		return creation;
+	}
+    
+    
 }

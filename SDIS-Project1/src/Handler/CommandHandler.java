@@ -103,140 +103,112 @@ public class CommandHandler extends Thread {
 		if (m.getHeader().getSenderId() != peer.getId()) {
 			System.out.println("Received PUTCHUNK :" + m.getHeader().getFileId() + " - " + m.getHeader().getChunkNo());
 			try {
-                peer.getFileSystem().saveChunk(peer.getId(), m.getHeader().getFileId(), m.getHeader().getChunkNo(), m.getHeader().getReplicationDeg(), m.getBody());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-			
-			
-			Header response_header = new Header("STORED", "1.0", peer.getId(), m.getHeader().getFileId(), m.getHeader().getChunkNo(), m.getHeader().getReplicationDeg());
+				peer.getFileSystem().saveChunk(peer.getId(), m.getHeader().getFileId(), m.getHeader().getChunkNo(),
+						m.getHeader().getReplicationDeg(), m.getBody());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			Header response_header = new Header("STORED", "1.0", peer.getId(), m.getHeader().getFileId(),
+					m.getHeader().getChunkNo(), m.getHeader().getReplicationDeg());
 			Message response = new Message(response_header, null);
-			
+
 			Random rand = new Random();
 			try {
-	            Thread.sleep(rand.nextInt(401));
-	        } catch (InterruptedException e) { e.printStackTrace(); }
-			
+				Thread.sleep(rand.nextInt(401));
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+
 			MulticastSocket socket = peer.getMC().getSocket();
 			DatagramPacket packet = new DatagramPacket(response.getBytes(), response.getBytes().length,
 					peer.getMC().getAddress(), peer.getMC().getPort());
 			socket.send(packet);
 
-		}else{
+		} else {
 			System.out.println("Received mine PUTCHUNK");
 		}
-		
+
 		try {
-            peer.getFileSystem().saveFileSystem(peer.getId());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-	}
-	
-	public void handleStored(Message msg){
-
-        String fileId = msg.getHeader().getFileId();
-        int senderId = msg.getHeader().getSenderId();
-        int chunkNo = msg.getHeader().getChunkNo();
-
-        System.out.println("Received STORED:" + fileId + " - " + chunkNo);
-
-        peer.getFileSystem().incrementReplication(senderId, fileId, chunkNo);
-        try {
-            peer.getFileSystem().saveFileSystem(peer.getId());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-	}
-	
-	public void handleDelete(Message msg){
-		System.out.println("Received DELETE: " + msg.getHeader().getFileId());
-		String fileId=msg.getHeader().getFileId();
-		if (peer.getFileSystem().getFile(fileId) != null) {
-            for (int chunkNo : peer.getFileSystem().getChunks(fileId).keySet()) {
-                peer.getFileSystem().deleteChunk(fileId, chunkNo);
-                peer.getFileSystem().removeSpaceUsed(peer.getFileSystem().getChunk(fileId, chunkNo).getSize());
-            }
-            peer.getFileSystem().deleteFile(fileId);
-        }
+			peer.getFileSystem().saveFileSystem(peer.getId());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
-	public void handleGetChunk(Message m){
+	public void handleStored(Message msg) {
 
-        System.out.println("Received GETCHUNK :" + m.getHeader().getFileId() + " " + m.getHeader().getChunkNo());
-			
-			
-		Header response_header = new Header("CHUNK", "1.0", peer.getId(), m.getHeader().getFileId(), m.getHeader().getChunkNo());
-		Message response = new Message(response_header, m.getBody());
-			
-		Random rand = new Random();
-			try {
-	            Thread.sleep(rand.nextInt(401));
-	        } catch (InterruptedException e) { e.printStackTrace(); }
-			
-		MulticastSocket socket = peer.getMC().getSocket();
-		DatagramPacket packet = new DatagramPacket(response.getBytes(), response.getBytes().length,
-					peer.getMC().getAddress(), peer.getMC().getPort());
-	
-		try {
-            socket.send(packet);
-        } catch (IOException e) {
-        	 System.out.println("Cannot send packet");
-            e.printStackTrace();
-        }
-		
-		try {
-        	peer.getFileSystem().saveFileSystem(peer.getId());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-      /*
-        Chunk recoverChunk = Database.getChunk(chunk);
-            Message chunkMsg = new Message(MessageType.CHUNK, peerID, recoverChunk.fileID, recoverChunk.chunkNo);
-            chunkMsg.body = recoverChunk.data;
-
-            ChunkHandler chunkHandler = new ChunkHandler(chunk);
-            mdr.addHandler(chunkHandler);
-
-            int timeoutDelay = Utils.random(0, 400);
-            Thread t = new Thread(new Timeout(timeoutDelay));
-            t.start();
-
-            while (true) {
-                if (chunkHandler.received()) {
-                    break;
-                }
-                if (!t.isAlive()) {
-                    Log.info("Sending chunk ("+recoverChunk+")");
-                    mdr.send(chunkMsg);
-                    break;
-                }
-            }
-
-            mdr.removeHandler(chunkHandler);
-        */
-	}
-	
-	
-	public void handleChunk(Message msg){
 		String fileId = msg.getHeader().getFileId();
-      	int chunkNo = msg.getHeader().getChunkNo();
-      	int senderId = msg.getHeader().getSenderId();
-        
-		System.out.println("Received FileRestore: " + fileId + " - " + chunkNo);
-		
+		int senderId = msg.getHeader().getSenderId();
+		int chunkNo = msg.getHeader().getChunkNo();
+
+		System.out.println("Received STORED:" + fileId + " - " + chunkNo);
+
+		peer.getFileSystem().incrementReplication(senderId, fileId, chunkNo);
 		try {
-            peer.getFileSystem().saveFileSystem(peer.getId());
-        } catch (IOException e) {
-        	 System.out.println("Cannot save file system");
-            e.printStackTrace();
-        }
+			peer.getFileSystem().saveFileSystem(peer.getId());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void handleDelete(Message msg) {
+		System.out.println("Received DELETE: " + msg.getHeader().getFileId());
+		String fileId = msg.getHeader().getFileId();
+		if (peer.getFileSystem().getFile(fileId) != null) {
+			for (int chunkNo : peer.getFileSystem().getChunks(fileId).keySet()) {
+				peer.getFileSystem().deleteChunk(fileId, chunkNo);
+				peer.getFileSystem().removeSpaceUsed(peer.getFileSystem().getChunk(fileId, chunkNo).getSize());
+			}
+			peer.getFileSystem().deleteFile(fileId);
+		}
+	}
+
+	public void handleGetChunk(Message m) {
+
+		System.out.println("Received GETCHUNK :" + m.getHeader().getFileId() + " " + m.getHeader().getChunkNo());
+		if (m.getHeader().getSenderId() != peer.getId()) {
+			byte[] data = peer.getFileSystem().retrieveChunkData(m.getHeader().getFileId(), m.getHeader().getChunkNo());
+			if (data != null) {
+				Header response_header = new Header("CHUNK", "1.0", peer.getId(), m.getHeader().getFileId(),
+						m.getHeader().getChunkNo());
+				Message response = new Message(response_header, data);
+				Random rand = new Random();
+				try {
+					Thread.sleep(rand.nextInt(401));
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				peer.getMDR().send(response);
+			}
+		}
+
+		try {
+			peer.getFileSystem().saveFileSystem(peer.getId());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void handleChunk(Message msg) {
+		String fileId = msg.getHeader().getFileId();
+		int chunkNo = msg.getHeader().getChunkNo();
+		int senderId = msg.getHeader().getSenderId();
+
+		System.out.println("Received FileRestore: " + fileId + " - " + chunkNo);
+		peer.getFileSystem().restoreChunk(fileId, chunkNo, msg.body);
+		try {
+			peer.getFileSystem().saveFileSystem(peer.getId());
+		} catch (IOException e) {
+			System.out.println("Cannot save file system");
+			e.printStackTrace();
+		}
 	}
 
 	public static Peer getPeer() {
 		return peer;
 	}
-	
+
 	public void handleRemoved(Message msg) {
 		System.out.println("Received REMOVED: " + msg.getHeader().getFileId() + msg.getHeader().getChunkNo());
 		FileSystem fs = peer.getFileSystem();
@@ -267,31 +239,34 @@ public class CommandHandler extends Thread {
 					while (attempt < 5 && !done) {
 						Header header = new Header("PUTCHUNK", "1.0", peer.getId(), msg.getHeader().getFileId(),
 								msg.getHeader().getChunkNo(), msg.getHeader().getReplicationDeg());
-						
+
 						Message new_msg = new Message(header, data);
-			            peer.getMC().send(new_msg);
-			            
-			            try {
-			            	 Thread.sleep((long) (time * Math.pow(2, attempt)));
-			             } catch (InterruptedException e) {
-			                 e.printStackTrace();
-			             }
-			             
-			             int currentReplication = fs.getChunkReplication(msg.getHeader().getFileId(), msg.getHeader().getChunkNo());
-			             int desiredReplication = fs.getChunkDesiredReplicationDegree(msg.getHeader().getFileId(), msg.getHeader().getChunkNo());
-			             if (currentReplication >= desiredReplication) {
-	                            done = true;
-	                        }
+						peer.getMC().send(new_msg);
+
+						try {
+							Thread.sleep((long) (time * Math.pow(2, attempt)));
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+
+						int currentReplication = fs.getChunkReplication(msg.getHeader().getFileId(),
+								msg.getHeader().getChunkNo());
+						int desiredReplication = fs.getChunkDesiredReplicationDegree(msg.getHeader().getFileId(),
+								msg.getHeader().getChunkNo());
+						if (currentReplication >= desiredReplication) {
+							done = true;
+						}
 					}
 					if (done) {
-			            System.out.println("Successfully stored <" + msg.getHeader().getFileId() + ", " + msg.getHeader().getChunkNo() + ">");
-			        }
-			        
-			        try {
-			            fs.saveFileSystem(peer.getId());
-			        } catch (IOException e) {
-			            e.printStackTrace();
-			        }
+						System.out.println("Successfully stored <" + msg.getHeader().getFileId() + ", "
+								+ msg.getHeader().getChunkNo() + ">");
+					}
+
+					try {
+						fs.saveFileSystem(peer.getId());
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 				}
 			}
 		}

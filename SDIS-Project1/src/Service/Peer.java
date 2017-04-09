@@ -10,6 +10,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.ExportException;
 import java.rmi.server.UnicastRemoteObject;
 
 import FileSystem.FileSystem;
@@ -31,6 +32,7 @@ public class Peer implements PeerInterface {
 	private FileRestoreProtocol restore;
 	private DeleteProtocol delete;
 	private ReclaimProtocol reclaim;
+	private static final int RMI_PORT = 1099;
 
 	public static void main(String[] args) throws Exception {
 		if (args.length != 7 && args.length != 1) {
@@ -44,9 +46,10 @@ public class Peer implements PeerInterface {
 			Peer peer = new Peer(args[0], "224.0.0.0", "8000", "224.0.0.0", "8001", "224.0.0.0", "8002");
 			try {
 				PeerInterface stub = (PeerInterface) UnicastRemoteObject.exportObject(peer, Integer.parseInt(args[0]));
-				Registry registry = LocateRegistry.createRegistry(Integer.parseInt(args[0]));
-				registry.rebind("Peer", stub);
+				Registry registry = LocateRegistry.createRegistry(RMI_PORT);
+				registry.rebind(args[0], stub);
 			} catch (RemoteException e) {
+				e.printStackTrace();
 				System.err.println("Cannot export RMI Object");
 				System.exit(-1);
 			}
@@ -56,11 +59,14 @@ public class Peer implements PeerInterface {
 		}
 
 		else if (args.length == 7) {
+			Registry registry;
 			Peer peer = new Peer(args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
 			try {
 				PeerInterface stub = (PeerInterface) UnicastRemoteObject.exportObject(peer, Integer.parseInt(args[0]));
-				Registry registry = LocateRegistry.createRegistry(Integer.parseInt(args[0]));
-				registry.rebind("Peer", stub);
+				registry = LocateRegistry.createRegistry(RMI_PORT);
+				registry.rebind(args[0], stub);
+			} catch (ExportException e) {
+		        registry = LocateRegistry.getRegistry(RMI_PORT);
 			} catch (RemoteException e) {
 				System.err.println("Cannot export RMI Object");
 				System.exit(-1);
