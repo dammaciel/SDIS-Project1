@@ -19,8 +19,8 @@ public class TestApp {
 		String fileName = args[2];
 
 		try {
-			Registry registry = LocateRegistry.getRegistry();
-			PeerInterface peer = (PeerInterface) registry.lookup(port);
+			Registry registry = LocateRegistry.getRegistry(Integer.parseInt(port));
+			PeerInterface peer = (PeerInterface) registry.lookup("Peer");
 
 			switch (protocol) {
 			case "BACKUP":
@@ -51,10 +51,8 @@ public class TestApp {
 				System.err.println("Unkown subprotocol!");
 			}
 		} catch (RemoteException e1) {
-			e1.printStackTrace();
 			System.err.println("Could not access to RMI register");
 		} catch (NotBoundException e1) {
-			e1.printStackTrace();
 			System.err.println("Impossible to acess peer!");
 		}
 
