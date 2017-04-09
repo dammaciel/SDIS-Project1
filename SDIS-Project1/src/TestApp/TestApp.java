@@ -19,8 +19,8 @@ public class TestApp {
 		String fileName = args[2];
 
 		try {
-			Registry registry = LocateRegistry.getRegistry(Integer.parseInt(port));
-			PeerInterface peer = (PeerInterface) registry.lookup("Peer");
+			Registry registry = LocateRegistry.getRegistry();
+			PeerInterface peer = (PeerInterface) registry.lookup(port);
 
 			switch (protocol) {
 			case "BACKUP":

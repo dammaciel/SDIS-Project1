@@ -33,19 +33,21 @@ public class Peer implements PeerInterface {
 	private ReclaimProtocol reclaim;
 
 	public static void main(String[] args) throws Exception {
-		if (args.length != 7 && args.length != 1) {
+		if (args.length != 7 && args.length != 2) {
 			System.out.println("Usage:");
 			System.out.println(
 					"\tjava Service.Peer <server_id> <mc_addr> <mc_port> <mdb_addr> <mdb_port> <mdr_addr> <mdr_port>");
 			return;
 		}
 
-		if (args.length == 1) {
+		if (args.length == 2) {
 			Peer peer = new Peer(args[0], "224.0.0.0", "8000", "224.0.0.0", "8001", "224.0.0.0", "8002");
 			try {
-				PeerInterface stub = (PeerInterface) UnicastRemoteObject.exportObject(peer, Integer.parseInt(args[0]));
-				Registry registry = LocateRegistry.createRegistry(Integer.parseInt(args[0]));
-				registry.rebind("Peer", stub);
+				PeerInterface stub = (PeerInterface) UnicastRemoteObject.exportObject(peer, 0);
+				Registry registry = LocateRegistry.getRegistry();
+	            registry.rebind(args[1], stub);
+	            
+	            System.err.println("Server ready");
 			} catch (RemoteException e) {
 				System.err.println("Cannot export RMI Object");
 				System.exit(-1);
