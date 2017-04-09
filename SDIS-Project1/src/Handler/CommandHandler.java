@@ -164,17 +164,10 @@ public class CommandHandler extends Thread {
 	public void handleGetChunk(Message m){
 
         System.out.println("Received GETCHUNK :" + m.getHeader().getFileId() + " " + m.getHeader().getChunkNo());
-        //if (peer.getFileSystem().getFile(fileId) != null) {
-            try {
-                peer.getFileSystem().saveChunk(peer.getId(), m.getHeader().getFileId(), m.getHeader().getChunkNo(), 0, m.getBody());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        //}
 			
 			
 		Header response_header = new Header("CHUNK", "1.0", peer.getId(), m.getHeader().getFileId(), m.getHeader().getChunkNo());
-		Message response = new Message(response_header, null);
+		Message response = new Message(response_header, m.getBody());
 			
 		Random rand = new Random();
 			try {

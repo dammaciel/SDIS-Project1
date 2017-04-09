@@ -47,7 +47,7 @@ public class FileRestoreProtocol {
         for (int i = 0; i < chunks.size(); i++) {
             final int chunkNo = i;
             final byte[] chunk = chunks.get(i);
-            fileSystem.saveChunk(filename, chunkNo, 0);
+            fileSystem.saveChunk(filename, chunkNo, 1);
             init(peer, filename, chunkNo, chunk);
         }
     }
