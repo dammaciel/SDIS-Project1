@@ -58,9 +58,11 @@ public class Peer implements PeerInterface {
 		else if (args.length == 7) {
 			Peer peer = new Peer(args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
 			try {
-				PeerInterface stub = (PeerInterface) UnicastRemoteObject.exportObject(peer, Integer.parseInt(args[0]));
-				Registry registry = LocateRegistry.createRegistry(Integer.parseInt(args[0]));
-				registry.rebind("Peer", stub);
+				PeerInterface stub = (PeerInterface) UnicastRemoteObject.exportObject(peer, 0);
+				Registry registry = LocateRegistry.getRegistry();
+	            registry.bind("Peer", stub);
+	            
+	            System.err.println("Server ready");
 			} catch (RemoteException e) {
 				System.err.println("Cannot export RMI Object");
 				System.exit(-1);
