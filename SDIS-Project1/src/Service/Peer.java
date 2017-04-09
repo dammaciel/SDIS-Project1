@@ -17,6 +17,7 @@ import Handler.CommandHandler;
 import Handler.PackageHandler;
 import Protocol.BackupProtocol;
 import Protocol.FileRestoreProtocol;
+import Protocol.ReclaimProtocol;
 import Protocol.DeleteProtocol;
 import Handler.BackupHandler;
 
@@ -29,6 +30,7 @@ public class Peer implements PeerInterface {
 	private BackupProtocol backup;
 	private FileRestoreProtocol restore;
 	private DeleteProtocol delete;
+	private ReclaimProtocol reclaim;
 
 	public static void main(String[] args) throws Exception {
 		if (args.length != 7 && args.length != 1) {
@@ -89,6 +91,7 @@ public class Peer implements PeerInterface {
         this.backup = new BackupProtocol(this);
         this.restore = new FileRestoreProtocol(this);
         this.delete = new DeleteProtocol(this);
+        this.reclaim = new ReclaimProtocol(this);
 
 		this.MC = new Channel(InetAddress.getByName(mc_address), Integer.parseInt(mc_port), "MC");
 		this.MDB = new Channel(InetAddress.getByName(mdb_address), Integer.parseInt(mdb_port), "MDB");
@@ -164,6 +167,18 @@ public class Peer implements PeerInterface {
             }catch(IOException e){
             	e.printStackTrace();
             }
+	}
+	
+	public void reclaimSpace(int space) {
+    	try{
+    		reclaim.reclaimSpace(space);
+            }catch(IOException e){
+            	e.printStackTrace();
+            }
+	}
+	
+	public String getStatus(){
+		return null;
 	}
 
 }

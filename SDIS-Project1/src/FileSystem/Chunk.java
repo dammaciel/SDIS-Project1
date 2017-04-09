@@ -52,4 +52,9 @@ public class Chunk implements Serializable{
         }
     }
 	
+	public void decreaseReplication(int peerId) {
+        if (replication.contains(peerId)) {
+            replication.remove(new Integer(peerId));
+        }
+    }
 }

@@ -83,7 +83,7 @@ public class CommandHandler extends Thread {
 				handleDelete(msg);
 				break;
 			case "REMOVED":
-
+				handleRemoved(msg);
 				break;
 			default:
 				System.out.println("Unrecognized command. Disregarding");
@@ -237,5 +237,63 @@ public class CommandHandler extends Thread {
 		return peer;
 	}
 	
-	
+	public void handleRemoved(Message msg) {
+		System.out.println("Received REMOVED: " + msg.getHeader().getFileId() + msg.getHeader().getChunkNo());
+		FileSystem fs = peer.getFileSystem();
+		if (msg.getHeader().getSenderId() != peer.getId()) {
+			if (fs.getChunk(msg.getHeader().getFileId(), msg.getHeader().getChunkNo()) != null) {
+				fs.decreaseReplicationDegree(msg.getHeader().getSenderId(), msg.getHeader().getFileId(),
+						msg.getHeader().getChunkNo());
+				if (fs.getFileAttributesByFileId(msg.getHeader().getFileId()) != null) {
+					return;
+				}
+				int actual = fs.getChunkReplication(msg.getHeader().getFileId(), msg.getHeader().getChunkNo());
+				int desired = fs.getChunkDesiredReplicationDegree(msg.getHeader().getFileId(),
+						msg.getHeader().getChunkNo());
+
+				if (actual < desired) {
+					Random rand = new Random();
+					try {
+						Thread.sleep(rand.nextInt(401));
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+
+					byte[] data = fs.retrieveChunkData(msg.getHeader().getFileId(), msg.getHeader().getChunkNo());
+					boolean done = false;
+					int attempt = 0;
+					int time = 1000;
+
+					while (attempt < 5 && !done) {
+						Header header = new Header("PUTCHUNK", "1.0", peer.getId(), msg.getHeader().getFileId(),
+								msg.getHeader().getChunkNo(), msg.getHeader().getReplicationDeg());
+						
+						Message new_msg = new Message(header, data);
+			            peer.getMC().send(new_msg);
+			            
+			            try {
+			            	 Thread.sleep((long) (time * Math.pow(2, attempt)));
+			             } catch (InterruptedException e) {
+			                 e.printStackTrace();
+			             }
+			             
+			             int currentReplication = fs.getChunkReplication(msg.getHeader().getFileId(), msg.getHeader().getChunkNo());
+			             int desiredReplication = fs.getChunkDesiredReplicationDegree(msg.getHeader().getFileId(), msg.getHeader().getChunkNo());
+			             if (currentReplication >= desiredReplication) {
+	                            done = true;
+	                        }
+					}
+					if (done) {
+			            System.out.println("Successfully stored <" + msg.getHeader().getFileId() + ", " + msg.getHeader().getChunkNo() + ">");
+			        }
+			        
+			        try {
+			            fs.saveFileSystem(peer.getId());
+			        } catch (IOException e) {
+			            e.printStackTrace();
+			        }
+				}
+			}
+		}
+	}
 }

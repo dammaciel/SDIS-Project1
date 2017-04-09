@@ -13,8 +13,8 @@ import java.util.HashMap;
 
 public class FileSystem implements Serializable {
 	private HashMap<String, FileChunk> files;
+	private int space = 124000;
 	private int spaceUsed = 0;
-	
 
 	public FileSystem() {
 		new File("./storage/").mkdir();
@@ -147,19 +147,35 @@ public class FileSystem implements Serializable {
 
 	public void deleteChunk(String fileId, int chunkNo) {
 		String path = "./storage/" + getChunkName(fileId, chunkNo);
-			try {
-				Files.delete(Paths.get(path));
-			} catch (NoSuchFileException e) {
-				
-			} catch(IOException e2){
-				e2.printStackTrace();
-			}
+		try {
+			Files.delete(Paths.get(path));
+		} catch (NoSuchFileException e) {
+
+		} catch (IOException e2) {
+			e2.printStackTrace();
+		}
 
 	}
-	
+
 	public void deleteFile(String fileId) {
-        files.remove(fileId);
-    }
+		files.remove(fileId);
+	}
+
+	public void deleteFileOfChunk(String fileId, int chunkNo) {
+		String path = "./storage/" + getChunkName(fileId, chunkNo);
+		try {
+			Files.delete(Paths.get(path));
+		} catch (NoSuchFileException e) {
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	public int getSpace() {
+		return space;
+	}
 
 	public int getSpaceUsed() {
 		return spaceUsed;
@@ -169,17 +185,110 @@ public class FileSystem implements Serializable {
 		this.spaceUsed -= removedSpace;
 	}
 
+	public int getChunkDesiredReplicationDegree(String fileId, int chunkNo) {
+		Chunk chunk = getChunk(fileId, chunkNo);
+		if (chunk != null) {
+			return chunk.getDesired();
+		}
+		return -1;
+	}
+
 	public void restFile(int peerID, String fileId) {
 		FileChunk file = getFile(fileId);
-		if(file == null) {
+		if (file == null) {
 			System.out.println("FileID vazio");
-			return ;
+			return;
 		}
 
 	}
 
-	public void getFile(String fileId, int chunkNo){
+	public void getFile(String fileId, int chunkNo) {
 		return;
 	}
+
+	public void reclaimSpace(int reclaimedSpace) {
+		if (space >= reclaimedSpace) {
+			space -= reclaimedSpace;
+		} else {
+			space = 0;
+		}
+	}
+
+	public HashMap<String, Integer> getChunksReclaim() {
+		HashMap<String, Integer> chunks = new HashMap<>();
+		for (String fileId : files.keySet()) {
+			for (int nr : getChunks(fileId).keySet()) {
+				int rd = getChunkReplication(fileId, nr);
+				int desiredRd = getChunkDesiredReplicationDegree(fileId, nr);
+				System.out.println(rd + "vs");
+				System.out.println(desiredRd);
+				if (rd > desiredRd) {
+					chunks.put(fileId, nr);
+				}
+			}
+		}
+		return chunks;
+	}
+
+	public String getHighestReplicationDegreeChunkFileId() {
+		String highest = null;
+		int max = 0;
+		for (String fileId : files.keySet()) {
+			for (int nr : getChunks(fileId).keySet()) {
+				int replicationDegree = getChunkReplication(fileId, nr);
+				if (replicationDegree > max) {
+					highest = fileId;
+					max = replicationDegree;
+				}
+			}
+		}
+		return highest;
+	}
+
+	public int getHighestReplicationDegreeChunkNr() {
+		int highest = -1;
+		int max = 0;
+		for (String fileId : files.keySet()) {
+			for (int nr : getChunks(fileId).keySet()) {
+				int replicationDegree = getChunkReplication(fileId, nr);
+				if (replicationDegree > max) {
+					highest = nr;
+					max = replicationDegree;
+				}
+			}
+		}
+		return highest;
+	}
+
+	public void decreaseReplicationDegree(int peerId, String fileId, int chunkNo) {
+		FileChunk file = getFile(fileId);
+		if (file == null) {
+			return;
+		}
+		Chunk chunk = file.getChunk(chunkNo);
+		if (chunk != null) {
+			chunk.decreaseReplication(peerId);
+		}
+	}
+	
+	public byte[] retrieveChunkData(String fileId, int chunkNo) {
+        FileChunk file = getFile(fileId);
+        if (file == null) {
+            return null;
+        }
+        Chunk chunk = file.getChunk(chunkNo);
+        if (chunk == null) {
+            return null;
+        }
+        byte[] data;
+        String path = "./storage/" + getChunkName(fileId, chunkNo);
+        try {
+            data = Files.readAllBytes(Paths.get(path));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+        return data;
+    }
 
 }

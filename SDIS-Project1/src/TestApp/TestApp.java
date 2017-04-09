@@ -44,7 +44,7 @@ public class TestApp {
 				break;
 			case "RECLAIM":
 				int space = Integer.parseInt(fileName);
-				// peer.reclaimSpace(space);
+				peer.reclaimSpace(space);
 				System.out.println("Bem vindo ao Reclaim");
 				break;
 			default:
