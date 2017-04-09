@@ -16,6 +16,7 @@ import FileSystem.FileSystem;
 import Handler.CommandHandler;
 import Handler.PackageHandler;
 import Protocol.BackupProtocol;
+import Protocol.FileRestoreProtocol;
 import Protocol.DeleteProtocol;
 import Handler.BackupHandler;
 
@@ -26,6 +27,7 @@ public class Peer implements PeerInterface {
 	private Channel MDR;
 	private FileSystem fileSystem;
 	private BackupProtocol backup;
+	private FileRestoreProtocol restore;
 	private DeleteProtocol delete;
 
 	public static void main(String[] args) throws Exception {
@@ -85,6 +87,7 @@ public class Peer implements PeerInterface {
         	this.fileSystem = new FileSystem();
         }
         this.backup = new BackupProtocol(this);
+        this.restore = new FileRestoreProtocol(this);
         this.delete = new DeleteProtocol(this);
 
 		this.MC = new Channel(InetAddress.getByName(mc_address), Integer.parseInt(mc_port), "MC");
@@ -142,6 +145,14 @@ public class Peer implements PeerInterface {
 	public void putFile(String path, int replication) {
     	try{
     		backup.backupFile(path, replication);
+            }catch(IOException e){
+            	e.printStackTrace();
+            }
+	}
+
+	public void fileRestore(String path) {
+    	try{
+    		restore.restoreFile(path);
             }catch(IOException e){
             	e.printStackTrace();
             }

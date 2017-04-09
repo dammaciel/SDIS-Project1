@@ -35,7 +35,7 @@ public class TestApp {
 				System.out.println("Bem vindo ao Backup");
 				break;
 			case "RESTORE":
-				// peer.restoreFile(fileName);
+				peer.fileRestore(fileName);
 				System.out.println("Bem vindo ao Restore");
 				break;
 			case "DELETE":

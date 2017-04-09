@@ -169,4 +169,17 @@ public class FileSystem implements Serializable {
 		this.spaceUsed -= removedSpace;
 	}
 
+	public void restFile(int peerID, String fileId) {
+		FileChunk file = getFile(fileId);
+		if(file == null) {
+			System.out.println("FileID vazio");
+			return ;
+		}
+
+	}
+
+	public void getFile(String fileId, int chunkNo){
+		return;
+	}
+
 }

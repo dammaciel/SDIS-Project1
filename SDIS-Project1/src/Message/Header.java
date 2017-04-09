@@ -13,6 +13,8 @@ public class Header {
     private String fileId;
     private int chunkNo;
     private int replicationDeg;
+    //public byte[] body = null;
+    //public int body_offset = -1;
     
     public Header(String messageType, String version, int senderId, String fileId, int chunkNo, int replicationDegree) throws IllegalArgumentException{
         if(!Arrays.asList(types).contains(messageType)){
@@ -45,6 +47,22 @@ public class Header {
         this.version = version;
         this.senderId = senderId;
         this.fileId = fileId;
+    }
+
+    public Header(String messageType, String version, int senderId, String fileId, int chunkNo) throws IllegalArgumentException{
+        if(!Arrays.asList(types).contains(messageType)){
+            throw new IllegalArgumentException("Invalid <MessageType>");
+        }
+        Pattern r = Pattern.compile("[0-9]*.[0-9]");
+        if(!r.matcher(version).matches()){
+            throw new IllegalArgumentException("Invalid <Version>");
+        }
+
+        this.messageType = messageType;
+        this.version = version;
+        this.senderId = senderId;
+        this.fileId = fileId;
+        this.chunkNo = chunkNo;
     }
     
     public Header(String message) throws  IllegalArgumentException{
