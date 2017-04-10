@@ -281,8 +281,7 @@ public class CommandHandler extends Thread {
 						}
 					}
 					if (done) {
-						System.out.println("Successfully stored <" + msg.getHeader().getFileId() + ", "
-								+ msg.getHeader().getChunkNo() + ">");
+						System.out.println("Successfully stored: " + msg.getHeader().getChunkNo());
 					}
 
 					try {
