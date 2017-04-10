@@ -6,10 +6,12 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.rmi.AlreadyBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.ExportException;
 import java.rmi.server.UnicastRemoteObject;
 
 import FileSystem.FileSystem;
@@ -33,43 +35,21 @@ public class Peer implements PeerInterface {
 	private ReclaimProtocol reclaim;
 
 	public static void main(String[] args) throws Exception {
-		if (args.length != 7 && args.length != 2) {
+		if (args.length != 7 && args.length != 1) {
 			System.out.println("Usage:");
 			System.out.println(
 					"\tjava Service.Peer <server_id> <mc_addr> <mc_port> <mdb_addr> <mdb_port> <mdr_addr> <mdr_port>");
 			return;
 		}
 
-		if (args.length == 2) {
+		if (args.length == 1) {
 			Peer peer = new Peer(args[0], "224.0.0.0", "8000", "224.0.0.0", "8001", "224.0.0.0", "8002");
-			try {
-				PeerInterface stub = (PeerInterface) UnicastRemoteObject.exportObject(peer, 0);
-				Registry registry = LocateRegistry.getRegistry();
-	            registry.rebind(args[1], stub);
-	            
-	            System.err.println("Server ready");
-			} catch (RemoteException e) {
-				System.err.println("Cannot export RMI Object");
-				System.exit(-1);
-			}
-
 			peer.run();
 
 		}
 
 		else if (args.length == 7) {
 			Peer peer = new Peer(args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
-			try {
-				PeerInterface stub = (PeerInterface) UnicastRemoteObject.exportObject(peer, 0);
-				Registry registry = LocateRegistry.getRegistry();
-	            registry.bind("Peer", stub);
-	            
-	            System.err.println("Server ready");
-			} catch (RemoteException e) {
-				System.err.println("Cannot export RMI Object");
-				System.exit(-1);
-			}
-
 			peer.run();
 		}
 
@@ -110,6 +90,20 @@ public class Peer implements PeerInterface {
 				MDB.shutdown();
 			}
 		});
+		Registry registry=null;
+		try {
+			LocateRegistry.createRegistry(1099);
+			registry = LocateRegistry.getRegistry();
+			PeerInterface stub = (PeerInterface) UnicastRemoteObject.exportObject(this, 0);
+			
+            registry.rebind("Peer", stub);
+            
+            System.err.println("Server ready");
+		} catch (RemoteException e) {
+			e.printStackTrace();
+			System.err.println("Cannot export RMI Object");
+			System.exit(-1);
+		}
 	}
 
 	public void run() {
