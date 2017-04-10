@@ -13,6 +13,9 @@ import java.util.regex.Pattern;
 
 import Message.Header;
 
+/**
+*	Main class for message management
+*/
 public class Message {
 	public static final int CHUNK_SIZE = 64512;
 
@@ -47,6 +50,9 @@ public class Message {
         }
 	}
 
+	/**
+	*	Main function
+	*/
 	public Message(Header header, byte[] body) {
 		this.header = header;
 		this.body = body;
@@ -60,6 +66,9 @@ public class Message {
 		return body;
 	}
 
+	/**
+	*	Hash builder
+	*/
 	public static String buildHash(String fileId) {
 		StringBuffer hexString;
 		MessageDigest hashAlgorithm = null;
@@ -85,6 +94,9 @@ public class Message {
 		return hexString.toString();
 	}
 
+	/**
+	*	CR and LF bytes to array
+	*/
 	public byte[] getBytes(){
         byte[] headerBytes = header.getBytes();
         byte[] CRLF = new byte[]{Header.CR, Header.LF, Header.CR, Header.LF};

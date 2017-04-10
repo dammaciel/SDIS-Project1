@@ -62,6 +62,9 @@ public class CommandHandler extends Thread {
 		}
 	}
 
+	/**
+	*	Identifies each type of Message
+	*/
 	private String handleCommand(byte[] commandPacket) {
 		try {
 			Message msg = new Message(commandPacket);
@@ -100,6 +103,9 @@ public class CommandHandler extends Thread {
 		return "ERROR";
 	}
 
+	/**
+	*	Saves Chunk data and sends STORES message
+	*/
 	private void handlePutChunk(Message m) throws IOException {
 		if (m.getHeader().getSenderId() != peer.getId()) {
 			System.out.println("Received PUTCHUNK :" + m.getHeader().getFileId() + " - " + m.getHeader().getChunkNo());
@@ -140,6 +146,9 @@ public class CommandHandler extends Thread {
 		}
 	}
 
+	/**
+	*	Saves chunk in the right folder
+	*/
 	public void handleStored(Message msg) {
 
 		String fileId = msg.getHeader().getFileId();
@@ -169,6 +178,9 @@ public class CommandHandler extends Thread {
 		}
 	}
 
+	/**
+	*	Gets chunk data and sends CHUNK message
+	*/
 	public void handleGetChunk(Message m) {
 
 		System.out.println("Received GETCHUNK :" + m.getHeader().getFileId() + " " + m.getHeader().getChunkNo());
@@ -195,6 +207,9 @@ public class CommandHandler extends Thread {
 		}
 	}
 
+	/**
+	*	Restores chunk and saves it
+	*/
 	public void handleChunk(Message msg) {
 		String fileId = msg.getHeader().getFileId();
 		int chunkNo = msg.getHeader().getChunkNo();
@@ -214,6 +229,9 @@ public class CommandHandler extends Thread {
 		return peer;
 	}
 
+	/**
+	*	Gets all files with specific path and deletes all of them
+	*/
 	public void handleRemoved(Message msg) {
 		System.out.println("Received REMOVED: " + msg.getHeader().getFileId() + msg.getHeader().getChunkNo());
 		FileSystem fs = peer.getFileSystem();

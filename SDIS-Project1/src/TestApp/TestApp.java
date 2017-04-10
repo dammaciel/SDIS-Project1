@@ -7,6 +7,9 @@ import java.rmi.registry.Registry;
 
 import Service.PeerInterface;
 
+/**
+*	Main Interface Class
+*/
 public class TestApp {
 	public static void main(String[] args) {
 		if (args.length < 2 || args.length > 4) {
@@ -17,13 +20,21 @@ public class TestApp {
 		String port = args[0];
 		String protocol = args[1];
 		String fileName = null;
+		
 		if(args.length>2){
 		 fileName = args[2];
 		}
+
 		try {
+			/**
+			*	RMI Connection
+			*/
 			Registry registry = LocateRegistry.getRegistry(Integer.parseInt(port));
 			PeerInterface peer = (PeerInterface) registry.lookup("Peer");
 
+			/**
+			*	Identifies the different protocols
+			*/
 			switch (protocol) {
 			case "BACKUP":
 				System.out.println("Starting Backup...");

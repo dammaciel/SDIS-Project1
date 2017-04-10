@@ -23,6 +23,9 @@ public class DeleteProtocol {
         this.fileSystem = peer.getFileSystem();
     }
     
+    /**
+    *   Search for a specific path and procedes for the deletion
+    */
     public void deleteFile(String path) throws IOException {
     	File file = new File(path);
 		

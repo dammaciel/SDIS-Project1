@@ -13,7 +13,7 @@ import java.util.HashMap;
 
 public class FileSystem implements Serializable {
 	private HashMap<String, FileChunk> files;
-	private int space = 1024 * 1000;
+	private int space = 124000;
 	private int spaceUsed = 0;
 
 	public FileSystem() {
@@ -21,6 +21,9 @@ public class FileSystem implements Serializable {
 		this.files = new HashMap<>();
 	}
 
+	/**
+	*	Creates Storage folder and calculates space used
+	*/
 	public void init() {
 		for (String fileId : files.keySet()) {
 			if (getFileAttributesByFileId(fileId) == null) {
@@ -36,6 +39,9 @@ public class FileSystem implements Serializable {
 		}
 	}
 
+	/**
+	*	Auxiliar functions
+	*/
 	public FileAttributes getFileAttributesByFileId(String fileId) {
 		FileChunk file = getFile(fileId);
 		if (file != null) {
@@ -60,6 +66,9 @@ public class FileSystem implements Serializable {
 		return null;
 	}
 
+	/**
+	*	Saves a file in a certain path
+	*/
 	public void saveFile(String path, String fileId) {
 		FileChunk file = getFile(fileId);
 		if (file == null) {
@@ -71,6 +80,9 @@ public class FileSystem implements Serializable {
 		}
 	}
 
+	/**
+	*	Saves chunk for a certain replication degree
+	*/
 	public void saveChunk(String fileId, int chunkNo, int replicationDeg) {
 		FileChunk file = getFile(fileId);
 		if (file == null) {
@@ -83,6 +95,9 @@ public class FileSystem implements Serializable {
 		}
 	}
 
+	/**
+	*	Calculates chunk replication degree
+	*/
 	public int getChunkReplication(String fileId, int chunkNo) {
 		Chunk chunk = getChunk(fileId, chunkNo);
 		if (chunk != null) {
@@ -99,6 +114,9 @@ public class FileSystem implements Serializable {
 		return null;
 	}
 
+	/**
+	*	Saves peerID in the filesystem
+	*/
 	public void saveFileSystem(int peerId) throws IOException {
 		FileOutputStream out = new FileOutputStream("./storage/" + ".info" + peerId);
 		ObjectOutputStream oOut = new ObjectOutputStream(out);
@@ -107,6 +125,9 @@ public class FileSystem implements Serializable {
 		out.close();
 	}
 
+	/**
+	*	Saves chunk in /storage
+	*/
 	public void saveChunk(int peerId, String fileId, int chunkNo, int replication, byte[] data) throws IOException {
 		FileChunk file = getFile(fileId);
 		if (file == null) {
@@ -123,6 +144,9 @@ public class FileSystem implements Serializable {
 		}
 	}
 
+	/**
+	*	Creates new file
+	*/
 	public static void createFile(String filepath, byte[] data) throws IOException, FileNotFoundException {
 		File file = new File(filepath);
 		file.createNewFile();
@@ -144,6 +168,9 @@ public class FileSystem implements Serializable {
 		}
 	}
 
+	/**
+	*	Deletes a chunk in /storage
+	*/
 	public void deleteChunk(String fileId, int chunkNo) {
 		String path = "./storage/" + getChunkName(fileId, chunkNo);
 		try {
@@ -177,6 +204,9 @@ public class FileSystem implements Serializable {
 		this.spaceUsed -= removedSpace;
 	}
 
+	/**
+	*	Gets a specific replication degree for a chunk
+	*/
 	public int getChunkDesiredReplicationDegree(String fileId, int chunkNo) {
 		Chunk chunk = getChunk(fileId, chunkNo);
 		if (chunk != null) {
@@ -185,6 +215,9 @@ public class FileSystem implements Serializable {
 		return -1;
 	}
 
+	/**
+	*	Restores a file
+	*/
 	public void restFile(int peerID, String fileId) {
 		FileChunk file = getFile(fileId);
 		if (file == null) {
@@ -198,6 +231,9 @@ public class FileSystem implements Serializable {
 		return;
 	}
 
+	/**
+	*	Reclaims space
+	*/
 	public void reclaimSpace(int reclaimedSpace) {
 		if (space >= reclaimedSpace) {
 			space -= reclaimedSpace;
@@ -212,6 +248,8 @@ public class FileSystem implements Serializable {
 			for (int nr : getChunks(fileId).keySet()) {
 				int rd = getChunkReplication(fileId, nr);
 				int desiredRd = getChunkDesiredReplicationDegree(fileId, nr);
+				/*System.out.println(rd + "vs");
+				System.out.println(desiredRd);*/
 				if (rd > desiredRd) {
 					chunks.put(fileId, nr);
 				}

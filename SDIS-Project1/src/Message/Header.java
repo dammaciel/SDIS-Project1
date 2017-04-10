@@ -3,6 +3,9 @@ package Message;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
+/**
+*   Main class for Header - Identifies each type of messages and headers
+*/
 public class Header {
 	public static final byte CR = 0xD;
     public static final byte LF = 0xA;
