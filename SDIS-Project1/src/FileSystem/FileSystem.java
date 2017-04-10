@@ -119,6 +119,7 @@ public class FileSystem implements Serializable {
 			createFile(filepath, data);
 			file.addChunk(chunkNo, peerId, replication);
 			spaceUsed += data.length;
+			file.getChunk(chunkNo).setSize(data.length);
 		}
 	}
 
@@ -152,23 +153,16 @@ public class FileSystem implements Serializable {
 		} catch (IOException e2) {
 			e2.printStackTrace();
 		}
+		
+		FileChunk file = getFile(fileId);
+        if (file != null) {
+            file.getChunks().remove(chunkNo);
+        }
 
 	}
 
 	public void deleteFile(String fileId) {
 		files.remove(fileId);
-	}
-
-	public void deleteFileOfChunk(String fileId, int chunkNo) {
-		String path = "./storage/" + getChunkName(fileId, chunkNo);
-		try {
-			Files.delete(Paths.get(path));
-		} catch (NoSuchFileException e) {
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
 	}
 
 	public int getSpace() {

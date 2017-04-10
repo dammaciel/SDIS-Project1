@@ -161,8 +161,9 @@ public class CommandHandler extends Thread {
 		String fileId = msg.getHeader().getFileId();
 		if (peer.getFileSystem().getFile(fileId) != null) {
 			for (int chunkNo : peer.getFileSystem().getChunks(fileId).keySet()) {
-				peer.getFileSystem().deleteChunk(fileId, chunkNo);
 				peer.getFileSystem().removeSpaceUsed(peer.getFileSystem().getChunk(fileId, chunkNo).getSize());
+				peer.getFileSystem().deleteChunk(fileId, chunkNo);
+				
 			}
 			peer.getFileSystem().deleteFile(fileId);
 		}

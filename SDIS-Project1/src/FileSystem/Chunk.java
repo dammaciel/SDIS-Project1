@@ -48,6 +48,10 @@ public class Chunk implements Serializable{
 		return size;
 	}
 	
+	public void setSize(int size) {
+		this.size = size;
+	}
+
 	public void setData(byte[] data) {
 		this.data = data;
 	}
