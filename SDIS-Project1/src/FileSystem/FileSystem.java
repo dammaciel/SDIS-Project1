@@ -13,7 +13,7 @@ import java.util.HashMap;
 
 public class FileSystem implements Serializable {
 	private HashMap<String, FileChunk> files;
-	private int space = 124000;
+	private int space = 1024*1000;
 	private int spaceUsed = 0;
 
 	public FileSystem() {

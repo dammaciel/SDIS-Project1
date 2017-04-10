@@ -26,13 +26,11 @@ public class ReclaimProtocol {
 		HashMap<String, Integer> toRemove = this.fileSystem.getChunksForReclaim();
 		System.out.println(toRemove.size());
 		for (Map.Entry<String, Integer> pair : toRemove.entrySet()) {
-			System.out.println("Entrei no reclaim2");
 			String fileId = pair.getKey();
 			int chunkNo = pair.getValue();
 
 			System.out.println("\nDeleting in order to reclaim space...");
 
-			this.fileSystem.deleteFileOfChunk(fileId, chunkNo);
 			this.fileSystem.removeSpaceUsed(this.fileSystem.getChunk(fileId, chunkNo).getSize());
 			this.fileSystem.deleteChunk(fileId, chunkNo);
 
@@ -48,7 +46,6 @@ public class ReclaimProtocol {
 		while((fileSystem.getSpace() - fileSystem.getSpaceUsed()) <0){
 			String fileId=this.fileSystem.getHighestReplicationDegreeChunkFileId();
 			int chunkNo = this.fileSystem.getHighestReplicationDegreeChunkNr();
-			this.fileSystem.deleteFileOfChunk(fileId, chunkNo);
 			this.fileSystem.removeSpaceUsed(this.fileSystem.getChunk(fileId, chunkNo).getSize());
 			this.fileSystem.deleteChunk(fileId, chunkNo);
 
