@@ -21,9 +21,6 @@ public class FileSystem implements Serializable {
 		this.files = new HashMap<>();
 	}
 
-	/**
-	*	Creates Storage folder and calculates space used
-	*/
 	public void init() {
 		for (String fileId : files.keySet()) {
 			if (getFileAttributesByFileId(fileId) == null) {
@@ -39,9 +36,6 @@ public class FileSystem implements Serializable {
 		}
 	}
 
-	/**
-	*	Auxiliar functions
-	*/
 	public FileAttributes getFileAttributesByFileId(String fileId) {
 		FileChunk file = getFile(fileId);
 		if (file != null) {
@@ -66,9 +60,6 @@ public class FileSystem implements Serializable {
 		return null;
 	}
 
-	/**
-	*	Saves a file in a certain path
-	*/
 	public void saveFile(String path, String fileId) {
 		FileChunk file = getFile(fileId);
 		if (file == null) {
@@ -80,9 +71,6 @@ public class FileSystem implements Serializable {
 		}
 	}
 
-	/**
-	*	Saves chunk for a certain replication degree
-	*/
 	public void saveChunk(String fileId, int chunkNo, int replicationDeg) {
 		FileChunk file = getFile(fileId);
 		if (file == null) {
@@ -95,9 +83,6 @@ public class FileSystem implements Serializable {
 		}
 	}
 
-	/**
-	*	Calculates chunk replication degree
-	*/
 	public int getChunkReplication(String fileId, int chunkNo) {
 		Chunk chunk = getChunk(fileId, chunkNo);
 		if (chunk != null) {
@@ -114,9 +99,6 @@ public class FileSystem implements Serializable {
 		return null;
 	}
 
-	/**
-	*	Saves peerID in the filesystem
-	*/
 	public void saveFileSystem(int peerId) throws IOException {
 		FileOutputStream out = new FileOutputStream("./storage/" + ".info" + peerId);
 		ObjectOutputStream oOut = new ObjectOutputStream(out);
@@ -125,9 +107,6 @@ public class FileSystem implements Serializable {
 		out.close();
 	}
 
-	/**
-	*	Saves chunk in /storage
-	*/
 	public void saveChunk(int peerId, String fileId, int chunkNo, int replication, byte[] data) throws IOException {
 		FileChunk file = getFile(fileId);
 		if (file == null) {
@@ -138,16 +117,13 @@ public class FileSystem implements Serializable {
 		System.out.println(chunk);
 		if (chunk == null) {
 			String filepath = "./storage/" + getChunkName(fileId, chunkNo);
-			System.out.println("Creating Chunk...");
+			System.out.println("Criando Chunk");
 			createFile(filepath, data);
 			file.addChunk(chunkNo, peerId, replication);
 			spaceUsed += data.length;
 		}
 	}
 
-	/**
-	*	Creates new file
-	*/
 	public static void createFile(String filepath, byte[] data) throws IOException, FileNotFoundException {
 		File file = new File(filepath);
 		file.createNewFile();
@@ -169,9 +145,6 @@ public class FileSystem implements Serializable {
 		}
 	}
 
-	/**
-	*	Deletes a chunk in /storage
-	*/
 	public void deleteChunk(String fileId, int chunkNo) {
 		String path = "./storage/" + getChunkName(fileId, chunkNo);
 		try {
@@ -220,9 +193,6 @@ public class FileSystem implements Serializable {
 		return -1;
 	}
 
-	/**
-	*	Restores a file
-	*/
 	public void restFile(int peerID, String fileId) {
 		FileChunk file = getFile(fileId);
 		if (file == null) {
@@ -236,9 +206,6 @@ public class FileSystem implements Serializable {
 		return;
 	}
 
-	/**
-	*	Reclaims space
-	*/
 	public void reclaimSpace(int reclaimedSpace) {
 		if (space >= reclaimedSpace) {
 			space -= reclaimedSpace;
@@ -253,13 +220,13 @@ public class FileSystem implements Serializable {
 			for (int nr : getChunks(fileId).keySet()) {
 				int rd = getChunkReplication(fileId, nr);
 				int desiredRd = getChunkDesiredReplicationDegree(fileId, nr);
-				System.out.println(rd + "vs" + desiredRd);
+				System.out.println(rd + "vs");
+				System.out.println(desiredRd);
 				if (rd > desiredRd) {
 					chunks.put(fileId, nr);
 				}
 			}
 		}
-		System.out.println("GetChunksReclaim done");
 		return chunks;
 	}
 
@@ -323,8 +290,8 @@ public class FileSystem implements Serializable {
         }
         return data;
     }
-
-    public FileAttributes getFileAttributes(String path) {
+	
+	public FileAttributes getFileAttributes(String path) {
 		System.out.println(files.size());
         for (FileChunk data : files.values()) {
         	System.out.println(data.getAttributes().getPath());
@@ -348,27 +315,6 @@ public class FileSystem implements Serializable {
         }
     }
 	
-<<<<<<< HEAD
-	public HashMap<String, FileChunk> getBackedUpFiles() {
- 	    HashMap<String, FileChunk> backedUpFiles = new HashMap<>();
- 	    for (String fileId : files.keySet()) {
- 	        if (getFileAttributesByFileId(fileId)!= null) {
-                backedUpFiles.put(fileId, files.get(fileId));
- 	        }
-        }
-        return backedUpFiles;
-    }
- 
-    public HashMap<String, FileChunk> getStoredChunks() {
- 	    HashMap<String, FileChunk> storedChunks = new HashMap<>();
-		for (String fileId : files.keySet()) {
- 	        if (getFileAttributesByFileId(fileId) == null) {
- 	            storedChunks.put(fileId, files.get(fileId));
- 	        }
- 	    }
- 	    return storedChunks;
-	}
-=======
 	  public HashMap<String, FileChunk> getBackedUpFiles() {
 	        HashMap<String, FileChunk> backedUpFiles = new HashMap<>();
 	        for (String fileId : files.keySet()) {
@@ -389,5 +335,4 @@ public class FileSystem implements Serializable {
 	        return storedChunks;
 	    }
 
->>>>>>> 54640ba26e7198bf92ca12b570e9c54313d4c2ae
 }

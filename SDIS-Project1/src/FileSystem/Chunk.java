@@ -14,8 +14,8 @@ public class Chunk implements Serializable{
     private int desired;
     private byte[] data;
     private int size;
-
-    public Chunk(){}
+    
+    public Chunk() {}
     
     public Chunk(int desired) {
         this.replication = new ArrayList<>();
@@ -47,11 +47,11 @@ public class Chunk implements Serializable{
 	public int getSize() {
 		return size;
 	}
-
-    public void setData(byte[] data) {
-        this.data = data;
-    }
 	
+	public void setData(byte[] data) {
+		this.data = data;
+	}
+
 	public void incrementReplication(int peerId) {
         if (!replication.contains(peerId)) {
             replication.add(peerId);

@@ -10,5 +10,4 @@ public interface PeerInterface extends Remote {
 	 void fileRestore(String path) throws RemoteException;
 	 void reclaimSpace(int amount) throws RemoteException;
 	 String getStatus() throws RemoteException;
-	 void intState() throws RemoteException;
 }

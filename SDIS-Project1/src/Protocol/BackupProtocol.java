@@ -29,9 +29,6 @@ public class BackupProtocol {
         this.fileSystem = peer.getFileSystem();
     }
 	
-    /**
-    *   Backups and creates a file with the following name: filename+modified+owner
-    */
     public void backupFile(String path, int replicationDeg) throws IOException {
     	File file = new File(path);
 		
@@ -78,9 +75,6 @@ public class BackupProtocol {
         return chunks;
     }
     
-    /**
-    *   Sending messages via MDB channel, max 5 messages
-    */
     public void init (Peer peer, String fileId, int chunkNo, byte[] chunkData, int replication){
     	int attempt = 0;
         int time= 1000;
@@ -103,7 +97,7 @@ public class BackupProtocol {
              }
              
              int currentReplication = fileSystem.getChunkReplication(fileId, chunkNo);
-             System.out.println("Checking replication: " + currentReplication + " - " + replication);
+             System.out.println("Verificando replication: " + currentReplication + " - " + replication);
              if (currentReplication >= replication) {
                  done = true;
              } else {                
@@ -112,7 +106,7 @@ public class BackupProtocol {
         }
         
         if (done) {
-            System.out.println("Successfully stored < " + fileId + " / " + chunkNo + " >");
+            System.out.println("Successfully stored <" + fileId + ", " + chunkNo + ">");
         }
         
         try {

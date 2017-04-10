@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.rmi.AlreadyBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -15,13 +16,8 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 
 import FileSystem.Chunk;
-<<<<<<< HEAD
-import FileSystem.FileChunk;
-import FileSystem.FileAttributes;
-=======
 import FileSystem.FileAttributes;
 import FileSystem.FileChunk;
->>>>>>> 54640ba26e7198bf92ca12b570e9c54313d4c2ae
 import FileSystem.FileSystem;
 import Handler.CommandHandler;
 import Handler.PackageHandler;
@@ -32,10 +28,6 @@ import Protocol.DeleteProtocol;
 import Handler.BackupHandler;
 
 public class Peer implements PeerInterface {
-
-	/**
-	*	ServerID , Channels used, Protocols and File System
-	*/
 	private int id;
 	private Channel MC;
 	private Channel MDB;
@@ -47,59 +39,21 @@ public class Peer implements PeerInterface {
 	private ReclaimProtocol reclaim;
 
 	public static void main(String[] args) throws Exception {
-		if (args.length != 7 && args.length != 2) {
+		if (args.length != 7 && args.length != 1) {
 			System.out.println("Usage:");
 			System.out.println(
 					"\tjava Service.Peer <server_id> <mc_addr> <mc_port> <mdb_addr> <mdb_port> <mdr_addr> <mdr_port>");
 			return;
 		}
 
-		/**
-		*	Default values for channel addresses and ports
-		*	Only need to insert ServerID
-		*/
-		if (args.length == 2) {
+		if (args.length == 1) {
 			Peer peer = new Peer(args[0], "224.0.0.0", "8000", "224.0.0.0", "8001", "224.0.0.0", "8002");
-			try {
-
-				/**
-				*	RMI connection
-				*/ 
-				PeerInterface stub = (PeerInterface) UnicastRemoteObject.exportObject(peer, 0);
-				Registry registry = LocateRegistry.getRegistry();
-	            registry.rebind(args[1], stub);
-	            
-	            System.err.println("Server ready");
-			} catch (RemoteException e) {
-				System.err.println("Cannot export RMI Object");
-				System.exit(-1);
-			}
-
 			peer.run();
 
 		}
 
-		/**
-		*	Insert full information - values for serverID, channel addresses and ports
-		*/
 		else if (args.length == 7) {
 			Peer peer = new Peer(args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
-			try {
-
-				/**
-				*	RMI connection
-				*/ 
-				Registry registry = LocateRegistry.createRegistry(this.id);
-				PeerInterface stub = (PeerInterface) UnicastRemoteObject.exportObject(this, this.id);
-		
-	            registry.bind("Peer", stub);
-	            
-	            System.err.println("Server ready");
-			} catch (RemoteException e) {
-				System.err.println("Cannot export RMI Object");
-				System.exit(-1);
-			}
-
 			peer.run();
 		}
 
@@ -141,18 +95,8 @@ public class Peer implements PeerInterface {
 			}
 		});
 		try {
-<<<<<<< HEAD
-
-			/**
-			*	RMI connection
-			*/
-			LocateRegistry.createRegistry(1099);
-			Registry registry = LocateRegistry.getRegistry();
-			PeerInterface stub = (PeerInterface) UnicastRemoteObject.exportObject(this, 0);
-=======
 			PeerInterface stub = (PeerInterface) UnicastRemoteObject.exportObject(this, this.id);
 			Registry registry= LocateRegistry.createRegistry(this.id);
->>>>>>> 54640ba26e7198bf92ca12b570e9c54313d4c2ae
 			
             registry.rebind("Peer", stub);
             
@@ -181,9 +125,6 @@ public class Peer implements PeerInterface {
 		mdrChannelHandler.start();
 	}
 
-	/**
-	*	Auxiliar functions
-	*/ 
 	public int getId() {
 		return id;
 	}
@@ -204,9 +145,6 @@ public class Peer implements PeerInterface {
 		return fileSystem;
 	}
 
-	/**
-	*	Backup Protocol
-	*/
 	public void putFile(String path, int replication) {
     	try{
     		backup.backupFile(path, replication);
@@ -215,9 +153,6 @@ public class Peer implements PeerInterface {
             }
 	}
 
-	/**
-	*	Restore Protocol
-	*/ 
 	public void fileRestore(String path) {
     	try{
     		restore.restoreFile(path);
@@ -226,9 +161,6 @@ public class Peer implements PeerInterface {
             }
 	}
 	
-	/**
-	*	Delete Protocol
-	*/
 	public void deleteFile(String path) {
     	try{
     		delete.deleteFile(path);
@@ -237,9 +169,6 @@ public class Peer implements PeerInterface {
             }
 	}
 	
-	/**
-	*	Space Reclaim Protocol
-	*/
 	public void reclaimSpace(int space) {
     	try{
     		reclaim.reclaimSpace(space);
@@ -249,48 +178,26 @@ public class Peer implements PeerInterface {
 	}
 	
 	public String getStatus(){
-<<<<<<< HEAD
-		String ret = "";
-        HashMap<String, FileChunk> backedUpFiles = fileSystem.getBackedUpFiles();
-		ret += "\n--------- Backed up files ---------\n\n";
-		
-=======
         String ret = "";
         HashMap<String, FileChunk> backedUpFiles = fileSystem.getBackedUpFiles();
 	ret += "\n--------- Backed up files ---------\n\n";
->>>>>>> 54640ba26e7198bf92ca12b570e9c54313d4c2ae
         for (String fileId : backedUpFiles.keySet()) {
             FileAttributes metadata = fileSystem.getFileAttributesByFileId(fileId);
             ret += "Pathname = '" + metadata.getPath() + "'\n";
             ret += "\tFile Id = " + fileId + "\n";
             ret += "\tDesired Replication Degree = " + fileSystem.getChunkDesiredReplicationDegree(fileId, 0) + "\n";
             HashMap<Integer, Chunk> chunks = fileSystem.getChunks(fileId);
-<<<<<<< HEAD
-            
-			for (int chunkNo : chunks.keySet()) {
-=======
             for (int chunkNo : chunks.keySet()) {
->>>>>>> 54640ba26e7198bf92ca12b570e9c54313d4c2ae
                 ret += "\tChunk <" + fileId + ", " + chunkNo + ">\n";
                 ret += "\t\tPerceived Replication Degree = " + fileSystem.getChunkReplication(fileId, chunkNo) + "\n";
             }
         }
-<<<<<<< HEAD
- 
-        HashMap<String, FileChunk> storedChunks = fileSystem.getStoredChunks();
-        if (storedChunks.size() != 0) {
-             ret += "\n---------- Stored chunks ----------\n\n";
-        }
-        
-		for (String fileId : storedChunks.keySet()) {
-=======
 
         HashMap<String, FileChunk> storedChunks = fileSystem.getStoredChunks();
         if (storedChunks.size() != 0) {
             ret += "\n---------- Stored chunks ----------\n\n";
         }
         for (String fileId : storedChunks.keySet()) {
->>>>>>> 54640ba26e7198bf92ca12b570e9c54313d4c2ae
             HashMap<Integer, Chunk> chunks = fileSystem.getChunks(fileId);
             for (int chunkNo : chunks.keySet()) {
                 ret += "Chunk <" + fileId + ", " + chunkNo + ">\n";
@@ -298,23 +205,9 @@ public class Peer implements PeerInterface {
                 ret += "\tPerceived Replication Degree = " + fileSystem.getChunkReplication(fileId, chunkNo) + "\n";
             }
         }
-<<<<<<< HEAD
- 
-        ret += "\nStorage = (" + fileSystem.getSpaceUsed() / 1000.0f + "/" + fileSystem.getSpace() / 1000.0f + ") KByte\n";
-        return ret;
-	}
-
-	/**
-	*	internal State Information
-	*/
-	public void intState(){
-		System.out.println("IntState nao esta em funcionamento.");
-	}
-=======
 
         ret += "\nStorage = (" + fileSystem.getSpaceUsed() / 1000.0f + "/" + fileSystem.getSpace() / 1000.0f + ") KByte\n";
         return ret;
     }
->>>>>>> 54640ba26e7198bf92ca12b570e9c54313d4c2ae
 
 }
