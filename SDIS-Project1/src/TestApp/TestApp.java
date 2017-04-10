@@ -21,7 +21,7 @@ public class TestApp {
 		 fileName = args[2];
 		}
 		try {
-			Registry registry = LocateRegistry.getRegistry(Integer.parseInt(port));
+			Registry registry = LocateRegistry.getRegistry("192.168.x.x", Integer.parseInt(port));
 			PeerInterface peer = (PeerInterface) registry.lookup("Peer");
 
 			switch (protocol) {

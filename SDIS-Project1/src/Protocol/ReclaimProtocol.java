@@ -23,7 +23,7 @@ public class ReclaimProtocol {
 	public void reclaimSpace(int space) throws IOException {
 		
 		this.fileSystem.reclaimSpace(space);
-		HashMap<String, Integer> toRemove = this.fileSystem.getChunksReclaim();
+		HashMap<String, Integer> toRemove = this.fileSystem.getChunksForReclaim();
 		System.out.println(toRemove.size());
 		for (Map.Entry<String, Integer> pair : toRemove.entrySet()) {
 			System.out.println("Entrei no reclaim2");

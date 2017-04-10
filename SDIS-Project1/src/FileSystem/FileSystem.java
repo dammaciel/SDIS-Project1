@@ -13,7 +13,7 @@ import java.util.HashMap;
 
 public class FileSystem implements Serializable {
 	private HashMap<String, FileChunk> files;
-	private int space = 124000;
+	private int space = 1024 * 1000;
 	private int spaceUsed = 0;
 
 	public FileSystem() {
@@ -212,14 +212,12 @@ public class FileSystem implements Serializable {
 		}
 	}
 
-	public HashMap<String, Integer> getChunksReclaim() {
+	public HashMap<String, Integer> getChunksForReclaim() {
 		HashMap<String, Integer> chunks = new HashMap<>();
 		for (String fileId : files.keySet()) {
 			for (int nr : getChunks(fileId).keySet()) {
 				int rd = getChunkReplication(fileId, nr);
 				int desiredRd = getChunkDesiredReplicationDegree(fileId, nr);
-				System.out.println(rd + "vs");
-				System.out.println(desiredRd);
 				if (rd > desiredRd) {
 					chunks.put(fileId, nr);
 				}
@@ -269,7 +267,7 @@ public class FileSystem implements Serializable {
 		}
 	}
 	
-	public byte[] retrieveChunkData(String fileId, int chunkNo) {
+	public byte[] recoverChunk(String fileId, int chunkNo) {
         FileChunk file = getFile(fileId);
         if (file == null) {
             return null;

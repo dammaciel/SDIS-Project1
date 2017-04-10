@@ -103,10 +103,12 @@ public class CommandHandler extends Thread {
 	private void handlePutChunk(Message m) throws IOException {
 		if (m.getHeader().getSenderId() != peer.getId()) {
 			System.out.println("Received PUTCHUNK :" + m.getHeader().getFileId() + " - " + m.getHeader().getChunkNo());
-			if ((peer.getFileSystem().getSpace()-peer.getFileSystem().getSpaceUsed()) < m.getBody().length) {
-                System.out.println("\t\tNot enough space to save chunk:" + m.getHeader().getChunkNo() + " (Size=" + m.getBody().length/ 1000.0f  + ") FreeSpace = " + (peer.getFileSystem().getSpace()-peer.getFileSystem().getSpaceUsed())/ 1000.0f);
-                return;
-            }
+			if ((peer.getFileSystem().getSpace() - peer.getFileSystem().getSpaceUsed()) < m.getBody().length) {
+				System.out.println("\t\tNot enough space to save chunk:" + m.getHeader().getChunkNo() + " (Size="
+						+ m.getBody().length / 1000.0f + ") FreeSpace = "
+						+ (peer.getFileSystem().getSpace() - peer.getFileSystem().getSpaceUsed()) / 1000.0f);
+				return;
+			}
 			try {
 				peer.getFileSystem().saveChunk(peer.getId(), m.getHeader().getFileId(), m.getHeader().getChunkNo(),
 						m.getHeader().getReplicationDeg(), m.getBody());
@@ -130,7 +132,7 @@ public class CommandHandler extends Thread {
 					peer.getMC().getAddress(), peer.getMC().getPort());
 			socket.send(packet);
 
-		} 
+		}
 		try {
 			peer.getFileSystem().saveFileSystem(peer.getId());
 		} catch (IOException e) {
@@ -170,7 +172,7 @@ public class CommandHandler extends Thread {
 
 		System.out.println("Received GETCHUNK :" + m.getHeader().getFileId() + " " + m.getHeader().getChunkNo());
 		if (m.getHeader().getSenderId() != peer.getId()) {
-			byte[] data = peer.getFileSystem().retrieveChunkData(m.getHeader().getFileId(), m.getHeader().getChunkNo());
+			byte[] data = peer.getFileSystem().recoverChunk(m.getHeader().getFileId(), m.getHeader().getChunkNo());
 			if (data != null) {
 				Header response_header = new Header("CHUNK", "1.0", peer.getId(), m.getHeader().getFileId(),
 						m.getHeader().getChunkNo());
@@ -233,7 +235,7 @@ public class CommandHandler extends Thread {
 						e.printStackTrace();
 					}
 
-					byte[] data = fs.retrieveChunkData(msg.getHeader().getFileId(), msg.getHeader().getChunkNo());
+					byte[] data = fs.recoverChunk(msg.getHeader().getFileId(), msg.getHeader().getChunkNo());
 					boolean done = false;
 					int attempt = 0;
 					int time = 1000;
