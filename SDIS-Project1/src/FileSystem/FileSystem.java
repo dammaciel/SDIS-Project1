@@ -314,5 +314,25 @@ public class FileSystem implements Serializable {
             chunk.setData(data);
         }
     }
+	
+	  public HashMap<String, FileChunk> getBackedUpFiles() {
+	        HashMap<String, FileChunk> backedUpFiles = new HashMap<>();
+	        for (String fileId : files.keySet()) {
+	            if (getFileAttributesByFileId(fileId)!= null) {
+	                backedUpFiles.put(fileId, files.get(fileId));
+	            }
+	        }
+	        return backedUpFiles;
+	    }
+
+	    public HashMap<String, FileChunk> getStoredChunks() {
+	        HashMap<String, FileChunk> storedChunks = new HashMap<>();
+	        for (String fileId : files.keySet()) {
+	            if (getFileAttributesByFileId(fileId) == null) {
+	                storedChunks.put(fileId, files.get(fileId));
+	            }
+	        }
+	        return storedChunks;
+	    }
 
 }

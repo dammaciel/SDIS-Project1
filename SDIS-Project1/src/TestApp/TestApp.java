@@ -9,17 +9,19 @@ import Service.PeerInterface;
 
 public class TestApp {
 	public static void main(String[] args) {
-		if (args.length < 3 || args.length > 4) {
+		if (args.length < 2 || args.length > 4) {
 			System.err.println("Usage: java TestApp <peer_ap> <sub_protocol> <opnd_1> <opnd_2>");
 			System.exit(-1);
 		}
 
 		String port = args[0];
 		String protocol = args[1];
-		String fileName = args[2];
-
+		String fileName = null;
+		if(args.length>2){
+		 fileName = args[2];
+		}
 		try {
-			Registry registry = LocateRegistry.getRegistry();
+			Registry registry = LocateRegistry.getRegistry(Integer.parseInt(port));
 			PeerInterface peer = (PeerInterface) registry.lookup("Peer");
 
 			switch (protocol) {
@@ -46,6 +48,9 @@ public class TestApp {
 				int space = Integer.parseInt(fileName);
 				peer.reclaimSpace(space);
 				System.out.println("Bem vindo ao Reclaim");
+				break;
+			case "STATE":
+				System.out.println(peer.getStatus());
 				break;
 			default:
 				System.err.println("Unkown subprotocol!");
