@@ -5,7 +5,10 @@ All the source code files required to compile and run the project are in the `sr
 
 ## How to compile
 
-The `.java` files can be compiled manually with the `javac` utility - *javac */*.java* i.e. javac Service/Peer.java
+The `.java` files can be compiled manually with the `javac` utility
+
+- javac Service/Peer.java
+- javac TestApp/TestApp.java
 
 ## How to run
 
@@ -31,15 +34,6 @@ When the multicast addresses and ports *are not specified* the following default
 
 Every peer is going to store their backup files in /storage.
 
-```
-+- storage
-|
-+---- chunk
-|     |
-|     ...
-...
-```
-
 ### Interface
 
 In order to communicate with peer (initiator peer)
@@ -54,6 +48,6 @@ Options
 	BACKUP <file_name> <replication_degree>            Backup file with specified replication degree
 	RESTORE <file_name>                                Restore file that was previously replicated
 	DELETE <file_name>                                 Delete file from backup service
-	RECLAIM <num_chunks>                               Reclaim the space occupied by the number of chunks specified
+	RECLAIM <new_space>                                Reclaim the space 
 	STATE                                              Manage local storage
 ```
