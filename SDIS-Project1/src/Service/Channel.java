@@ -52,7 +52,7 @@ public class Channel implements Runnable {
 		while (!done) {
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
             try {
-            	System.out.println(this.name + " Estou pronto a receber");
+            	System.out.println(this.name + " Ready");
                 socket.receive(packet);
                 handle(packet);                
             } catch (IOException e) {
@@ -85,7 +85,7 @@ public class Channel implements Runnable {
         DatagramPacket p = new DatagramPacket(packet, packet.length, address, port);
         try {
             socket.send(p);
-            System.out.println(this.name + " esta a enviar");
+            System.out.println(this.name + " sending...");
         } catch (IOException e) {
             e.printStackTrace();
         }

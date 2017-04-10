@@ -24,7 +24,8 @@ public class ReclaimProtocol {
 		
 		this.fileSystem.reclaimSpace(space);
 		HashMap<String, Integer> toRemove = this.fileSystem.getChunksReclaim();
-		System.out.println(toRemove.size());
+		System.out.println("Need to remove " + toRemove.size());
+
 		for (Map.Entry<String, Integer> pair : toRemove.entrySet()) {
 			System.out.println("Entrei no reclaim2");
 			String fileId = pair.getKey();
