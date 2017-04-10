@@ -7,6 +7,9 @@ import java.util.Arrays;
 
 import Service.Channel;
 
+/**
+*	Main class to handle the packages - Datagram and Multicast
+*/
 public class PackageHandler extends Thread{
 	 private Channel channel;
 	 

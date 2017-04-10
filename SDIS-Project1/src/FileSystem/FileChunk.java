@@ -3,6 +3,9 @@ package FileSystem;
 import java.io.Serializable;
 import java.util.HashMap;
 
+/**
+*	Class for chunk management
+*/
 public class FileChunk implements Serializable{
 	private FileAttributes attributes;
 	private HashMap<Integer, Chunk> chunks;

@@ -9,6 +9,9 @@ import java.util.ArrayList;
 
 import Message.Message;
 
+/**
+*   Main chunk class
+*/
 public class Chunk implements Serializable{
 	private ArrayList<Integer> replication;
     private int desired;

@@ -28,6 +28,10 @@ import Protocol.DeleteProtocol;
 import Handler.BackupHandler;
 
 public class Peer implements PeerInterface {
+	
+	/**
+	*	ServerID , Channels used, Protocols and File System
+	*/
 	private int id;
 	private Channel MC;
 	private Channel MDB;
@@ -46,12 +50,19 @@ public class Peer implements PeerInterface {
 			return;
 		}
 
+		/**
+		*	Default values for channel addresses and ports
+		*	Only need to insert ServerID
+		*/
 		if (args.length == 1) {
 			Peer peer = new Peer(args[0], "224.0.0.0", "8000", "224.0.0.0", "8001", "224.0.0.0", "8002");
 			peer.run();
 
 		}
 
+		/**
+		*	Insert full information - values for serverID, channel addresses and ports
+		*/
 		else if (args.length == 7) {
 			Peer peer = new Peer(args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
 			peer.run();
@@ -76,6 +87,10 @@ public class Peer implements PeerInterface {
         } else {
         	this.fileSystem = new FileSystem();
         }
+
+        /**
+		*	Protocols
+		*/
         this.backup = new BackupProtocol(this);
         this.restore = new FileRestoreProtocol(this);
         this.delete = new DeleteProtocol(this);
@@ -95,6 +110,10 @@ public class Peer implements PeerInterface {
 			}
 		});
 		try {
+
+			/**
+			*	RMI connection
+			*/
 			PeerInterface stub = (PeerInterface) UnicastRemoteObject.exportObject(this, this.id);
 			Registry registry= LocateRegistry.createRegistry(this.id);
 			
@@ -108,6 +127,9 @@ public class Peer implements PeerInterface {
 		}
 	}
 
+	/**
+	*	Starts Multicast thread and channels
+	*/
 	public void run() {
 		Thread mc_thread = new Thread(MC);
 		mc_thread.start();
@@ -125,6 +147,9 @@ public class Peer implements PeerInterface {
 		mdrChannelHandler.start();
 	}
 
+	/**
+	*	Auxiliar functions
+	*/ 
 	public int getId() {
 		return id;
 	}
@@ -145,6 +170,9 @@ public class Peer implements PeerInterface {
 		return fileSystem;
 	}
 
+	/**
+	*	Backup Protocol
+	*/
 	public void putFile(String path, int replication) {
     	try{
     		backup.backupFile(path, replication);
@@ -153,6 +181,9 @@ public class Peer implements PeerInterface {
             }
 	}
 
+	/**
+	*	Restore Protocol
+	*/ 
 	public void fileRestore(String path) {
     	try{
     		restore.restoreFile(path);
@@ -161,6 +192,9 @@ public class Peer implements PeerInterface {
             }
 	}
 	
+	/**
+	*	Delete Protocol
+	*/
 	public void deleteFile(String path) {
     	try{
     		delete.deleteFile(path);
@@ -169,6 +203,9 @@ public class Peer implements PeerInterface {
             }
 	}
 	
+	/**
+	*	Space Reclaim Protocol
+	*/
 	public void reclaimSpace(int space) {
     	try{
     		reclaim.reclaimSpace(space);
@@ -177,6 +214,9 @@ public class Peer implements PeerInterface {
             }
 	}
 	
+	/**
+	*	Internal State
+	*/
 	public String getStatus(){
         String state = "";
         HashMap<String, FileChunk> backup = fileSystem.getBackedUpFiles();

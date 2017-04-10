@@ -34,6 +34,9 @@ public class FileRestoreProtocol {
 		this.fileSystem = peer.getFileSystem();
 	}
 
+	/**
+    *   Sending messages via MDR channel, max 5 messages
+    */
 	public void restoreFile(String path) throws IOException {
 		FileAttributes attributes = fileSystem.getFileAttributes(path);
 		if (attributes == null) {
@@ -92,6 +95,9 @@ public class FileRestoreProtocol {
         }
 	}
 
+	/**
+    *   Gets chunk in a certain path
+    */
 	public static ArrayList<byte[]> getFileChunks(String filepath, int size) {
 		ArrayList<byte[]> chunks = new ArrayList<>();
 		int numRead = 0, read = 0;
@@ -115,6 +121,9 @@ public class FileRestoreProtocol {
 		return chunks;
 	}
 
+	/**
+    *   Initialize Restore Protocol by sending GETCHUNK messsage
+    */
 	public void init(Peer peer, String fileId, int chunkNo, byte[] chunkData) {
 
 		Header header = new Header("GETCHUNK", "1.0", peer.getId(), fileId, chunkNo);

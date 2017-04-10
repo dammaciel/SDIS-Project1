@@ -7,6 +7,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 
+/**
+*	Class for file management
+*/
 public class FileAttributes implements Serializable {
 	private String path;
     private String fileId;
