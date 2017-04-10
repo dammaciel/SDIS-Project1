@@ -26,6 +26,7 @@ public class TestApp {
 
 			switch (protocol) {
 			case "BACKUP":
+				System.out.println("Starting Backup...");
 				int repDegree = 0;
 				if (args.length == 4) {
 					repDegree = Integer.parseInt(args[3]);
@@ -34,20 +35,23 @@ public class TestApp {
 					return;
 				}
 				peer.putFile(fileName, repDegree);
-				System.out.println("Bem vindo ao Backup");
+				System.out.println("Backup executed!");
 				break;
 			case "RESTORE":
+				System.out.println("Starting Restore...");
 				peer.fileRestore(fileName);
-				System.out.println("Bem vindo ao Restore");
+				System.out.println("Restore executed!");
 				break;
 			case "DELETE":
+				System.out.println("Starting Delete...");
 				peer.deleteFile(fileName);
-				System.out.println("Bem vindo ao Delete");
+				System.out.println("Delete executed!");
 				break;
 			case "RECLAIM":
-				int space = Integer.parseInt(fileName);
+				System.out.println("Start Reclaim Space...");
+				int space = 1000 *Integer.parseInt(fileName);
 				peer.reclaimSpace(space);
-				System.out.println("Bem vindo ao Reclaim");
+				System.out.println("Reclaim Space executed!");
 				break;
 			case "STATE":
 				System.out.println(peer.getStatus());

@@ -93,6 +93,7 @@ public class CommandHandler extends Thread {
 			return msg.getHeader().getMessageType();
 		} catch (IllegalArgumentException e) {
 			System.err.println(e.getMessage());
+			e.printStackTrace();
 		} catch (Exception e) {
 
 		}
@@ -102,6 +103,10 @@ public class CommandHandler extends Thread {
 	private void handlePutChunk(Message m) throws IOException {
 		if (m.getHeader().getSenderId() != peer.getId()) {
 			System.out.println("Received PUTCHUNK :" + m.getHeader().getFileId() + " - " + m.getHeader().getChunkNo());
+			if ((peer.getFileSystem().getSpace()-peer.getFileSystem().getSpaceUsed()) < m.getBody().length) {
+                System.out.println("\t\tNot enough space to save chunk:" + m.getHeader().getChunkNo() + " (Size=" + m.getBody().length/ 1000.0f  + ") FreeSpace = " + (peer.getFileSystem().getSpace()-peer.getFileSystem().getSpaceUsed())/ 1000.0f);
+                return;
+            }
 			try {
 				peer.getFileSystem().saveChunk(peer.getId(), m.getHeader().getFileId(), m.getHeader().getChunkNo(),
 						m.getHeader().getReplicationDeg(), m.getBody());
@@ -125,10 +130,7 @@ public class CommandHandler extends Thread {
 					peer.getMC().getAddress(), peer.getMC().getPort());
 			socket.send(packet);
 
-		} else {
-			System.out.println("Received mine PUTCHUNK");
-		}
-
+		} 
 		try {
 			peer.getFileSystem().saveFileSystem(peer.getId());
 		} catch (IOException e) {
@@ -195,7 +197,7 @@ public class CommandHandler extends Thread {
 		int chunkNo = msg.getHeader().getChunkNo();
 		int senderId = msg.getHeader().getSenderId();
 
-		System.out.println("Received FileRestore: " + fileId + " - " + chunkNo);
+		System.out.println("Received CHUNK : " + fileId + " - " + chunkNo);
 		peer.getFileSystem().restoreChunk(fileId, chunkNo, msg.body);
 		try {
 			peer.getFileSystem().saveFileSystem(peer.getId());

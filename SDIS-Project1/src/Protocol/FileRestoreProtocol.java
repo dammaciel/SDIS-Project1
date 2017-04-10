@@ -37,7 +37,6 @@ public class FileRestoreProtocol {
 	public void restoreFile(String path) throws IOException {
 		FileAttributes attributes = fileSystem.getFileAttributes(path);
 		if (attributes == null) {
-			System.out.println("atributos nulos");
 			return;
 		}
 		String fileId = attributes.getFileId();
@@ -123,7 +122,7 @@ public class FileRestoreProtocol {
 		Message msg = new Message(header, body);
 		peer.getMDR().send(msg);
 
-		System.out.println("Successfully restored < " + fileId + ", " + chunkNo + ">");
+		System.out.println("\tRESTORED: " + chunkNo);
 
 		try {
 			fileSystem.saveFileSystem(peer.getId());

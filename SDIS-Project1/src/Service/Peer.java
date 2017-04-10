@@ -178,36 +178,39 @@ public class Peer implements PeerInterface {
 	}
 	
 	public String getStatus(){
-        String ret = "";
-        HashMap<String, FileChunk> backedUpFiles = fileSystem.getBackedUpFiles();
-	ret += "\n--------- Backed up files ---------\n\n";
-        for (String fileId : backedUpFiles.keySet()) {
-            FileAttributes metadata = fileSystem.getFileAttributesByFileId(fileId);
-            ret += "Pathname = '" + metadata.getPath() + "'\n";
-            ret += "\tFile Id = " + fileId + "\n";
-            ret += "\tDesired Replication Degree = " + fileSystem.getChunkDesiredReplicationDegree(fileId, 0) + "\n";
+        String state = "";
+        HashMap<String, FileChunk> backup = fileSystem.getBackedUpFiles();
+	state += "\nFiles whose backup it has initiated: \n\n";
+        for (String fileId : backup.keySet()) {
+            FileAttributes attributes = fileSystem.getFileAttributesByFileId(fileId);
+            state += "\tPath: '" + attributes.getPath() + "'\n";
+            state += "\t\tFile Id = " + fileId + "\n";
+            state += "\t\tDesired Replication Degree = " + fileSystem.getChunkDesiredReplicationDegree(fileId, 0) + "\n";
             HashMap<Integer, Chunk> chunks = fileSystem.getChunks(fileId);
+            state += "\t\tChunks: \n";
             for (int chunkNo : chunks.keySet()) {
-                ret += "\tChunk <" + fileId + ", " + chunkNo + ">\n";
-                ret += "\t\tPerceived Replication Degree = " + fileSystem.getChunkReplication(fileId, chunkNo) + "\n";
+                state += "\t\t\tid=" + chunkNo+"\n";
+                state += "\t\t\tPerceived Replication Degree = " + fileSystem.getChunkReplication(fileId, chunkNo) + "\n";
             }
         }
 
         HashMap<String, FileChunk> storedChunks = fileSystem.getStoredChunks();
         if (storedChunks.size() != 0) {
-            ret += "\n---------- Stored chunks ----------\n\n";
+            state += "\nChunks stored: \n\n";
         }
         for (String fileId : storedChunks.keySet()) {
             HashMap<Integer, Chunk> chunks = fileSystem.getChunks(fileId);
+            state += "\t\tChunks: \n";
             for (int chunkNo : chunks.keySet()) {
-                ret += "Chunk <" + fileId + ", " + chunkNo + ">\n";
-                ret += "\tSize = " + fileSystem.getChunk(fileId, chunkNo).getSize() / 1000.0f + " KByte\n";
-                ret += "\tPerceived Replication Degree = " + fileSystem.getChunkReplication(fileId, chunkNo) + "\n";
+                state += "\t\t\tid=" + chunkNo+"\n";
+                state += "\t\t\tSize = " + fileSystem.getChunk(fileId, chunkNo).getSize() / 1000.0f + " KByte\n";
+                state += "\t\t\tPerceived Replication Degree = " + fileSystem.getChunkReplication(fileId, chunkNo) + "\n";
             }
         }
 
-        ret += "\nStorage = (" + fileSystem.getSpaceUsed() / 1000.0f + "/" + fileSystem.getSpace() / 1000.0f + ") KByte\n";
-        return ret;
+        state += "\n Total Space= " + fileSystem.getSpace() / 1000.0f + " KByte"; 
+        state += "\n Used Space= "+  fileSystem.getSpaceUsed() / 1000.0f + " KByte\n";
+        return state;
     }
 
 }

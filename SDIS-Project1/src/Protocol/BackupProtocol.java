@@ -97,7 +97,6 @@ public class BackupProtocol {
              }
              
              int currentReplication = fileSystem.getChunkReplication(fileId, chunkNo);
-             System.out.println("Verificando replication: " + currentReplication + " - " + replication);
              if (currentReplication >= replication) {
                  done = true;
              } else {                
@@ -106,7 +105,7 @@ public class BackupProtocol {
         }
         
         if (done) {
-            System.out.println("Successfully stored <" + fileId + ", " + chunkNo + ">");
+            System.out.println("\tSuccessfully stored :" + chunkNo);
         }
         
         try {

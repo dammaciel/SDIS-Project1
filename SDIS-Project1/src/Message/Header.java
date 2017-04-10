@@ -13,8 +13,7 @@ public class Header {
     private String fileId;
     private int chunkNo;
     private int replicationDeg;
-    //public byte[] body = null;
-    //public int body_offset = -1;
+
     
     public Header(String messageType, String version, int senderId, String fileId, int chunkNo, int replicationDegree) throws IllegalArgumentException{
         if(!Arrays.asList(types).contains(messageType)){
@@ -67,7 +66,6 @@ public class Header {
     
     public Header(String message) throws  IllegalArgumentException{
         String[] fields = message.split("\\s+");
-
         if(fields.length < 4 || fields.length > 6){
             throw new IllegalArgumentException("Invalid number of arguments");
         }
@@ -133,4 +131,5 @@ public class Header {
         }
         return msg;
     }
+
 }

@@ -114,10 +114,8 @@ public class FileSystem implements Serializable {
 			file = getFile(fileId);
 		}
 		Chunk chunk = file.getChunk(chunkNo);
-		System.out.println(chunk);
 		if (chunk == null) {
 			String filepath = "./storage/" + getChunkName(fileId, chunkNo);
-			System.out.println("Criando Chunk");
 			createFile(filepath, data);
 			file.addChunk(chunkNo, peerId, replication);
 			spaceUsed += data.length;
@@ -294,8 +292,6 @@ public class FileSystem implements Serializable {
 	public FileAttributes getFileAttributes(String path) {
 		System.out.println(files.size());
         for (FileChunk data : files.values()) {
-        	System.out.println(data.getAttributes().getPath());
-        	System.out.println("vs "+path);
             if (data.getAttributes().getPath().equals(path)) {
                 return data.getAttributes();
             }

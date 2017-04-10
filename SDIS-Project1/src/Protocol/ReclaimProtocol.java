@@ -30,7 +30,7 @@ public class ReclaimProtocol {
 			String fileId = pair.getKey();
 			int chunkNo = pair.getValue();
 
-			System.out.println("Deleting in order to reclaim space...");
+			System.out.println("\nDeleting in order to reclaim space...");
 
 			this.fileSystem.deleteFileOfChunk(fileId, chunkNo);
 			this.fileSystem.removeSpaceUsed(this.fileSystem.getChunk(fileId, chunkNo).getSize());
