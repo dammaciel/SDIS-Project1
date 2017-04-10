@@ -5,13 +5,7 @@ All the source code files required to compile and run the project are in the `sr
 
 ## How to compile
 
-The `.java` files can be compiled manually with the `javac` utility - *javac */*.java*
-
-The whole source folder can also be imported into the IDE of choice without any external libraries needed.
-
-*Note: This project was developed using the Java SDK v8 even though it should also be compatible
-with older versions*
-
+The `.java` files can be compiled manually with the `javac` utility - *javac */*.java* i.e. javac Service/Peer.java
 
 ## How to run
 
@@ -62,5 +56,4 @@ Options
 	DELETE <file_name>                                 Delete file from backup service
 	RECLAIM <num_chunks>                               Reclaim the space occupied by the number of chunks specified
 	STATE                                              Manage local storage
-	QUIT                                               Makes the peer quit
 ```
