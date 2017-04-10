@@ -44,6 +44,7 @@ Every peer is going to store their backup files in /storage.
 |     |
 |     ...
 ...
+```
 
 ### Interface
 
