@@ -96,7 +96,6 @@ public class Peer implements PeerInterface {
 		});
 		try {
 			PeerInterface stub = (PeerInterface) UnicastRemoteObject.exportObject(this, this.id);
-			System.setProperty("java.rmi.server.hostname", "192.168.x.x");  
 			Registry registry= LocateRegistry.createRegistry(this.id);
 			
             registry.rebind("Peer", stub);
